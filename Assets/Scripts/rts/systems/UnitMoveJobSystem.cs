@@ -1,6 +1,5 @@
 using rts.components;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
@@ -42,7 +41,7 @@ namespace rts.systems {
         public EntityCommandBuffer.ParallelWriter Ecb;
         public float StoppingDistance;
 
-        private void Execute(Entity entity, [EntityIndexInChunk] int index, ref LocalTransform transform, in MoveData moveData, in MoveDestination destination, ref PhysicsVelocity physicsVelocity) {
+        private void Execute(ref LocalTransform transform, in MoveData moveData, in MoveDestination destination, ref PhysicsVelocity physicsVelocity) {
             
             var direction = destination.Value - transform.Position;
             
