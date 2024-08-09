@@ -1,10 +1,15 @@
 using rts.components;
 using Unity.Burst;
 using Unity.Entities;
+using Unity.Transforms;
 
 namespace rts.systems {
     
-    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
+    /// <summary>
+    /// Clears any target that has been destroyed on the previous frame by EndSimulationEntityCommandBufferSystem
+    /// </summary>
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
+    [UpdateAfter(typeof(EndSimulationEntityCommandBufferSystem))]
     public partial struct ClearDestroyedTargetSystem : ISystem {
         
         [BurstCompile]
@@ -12,14 +17,14 @@ namespace rts.systems {
             
         }
 
-
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            foreach (var target in SystemAPI.Query<RefRW<AttackTarget>>()) {
-                if (SystemAPI.Exists(target.ValueRO.Value)) {
-                    continue;
+            foreach (var target in SystemAPI.Query<RefRW<Target>>()) {
+                if (target.ValueRO.Value != Entity.Null) continue;
+                
+                if (!SystemAPI.Exists(target.ValueRO.Value) || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
+                    target.ValueRW.Value = Entity.Null;
                 }
-                target.ValueRW.Value = Entity.Null;
             }
         }
     }

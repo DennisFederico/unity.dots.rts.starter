@@ -3,8 +3,7 @@ using Unity.Entities;
 
 namespace rts.systems {
     
-    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
-    [UpdateBefore(typeof(ClearDestroyedTargetSystem))]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup), OrderLast = true)]
     public partial struct HealthDeadSystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {

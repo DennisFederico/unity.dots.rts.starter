@@ -8,7 +8,8 @@ namespace rts.components {
         public float RotationSpeed;
     }
 
-    public struct ShouldMove : IComponentData, IEnableableComponent {
+    public struct ShouldMove : IComponentData {
+        public bool Value;
     }
     
     public struct MoveDestination : IComponentData {
@@ -42,17 +43,25 @@ namespace rts.components {
         public float ShowScale;
     }
     
-    public struct AttackTarget : IComponentData {
+    public struct Target : IComponentData {
         public Entity Value;
+        public float3 AttackOffset;
     }
     
     public struct ShootAttack : IComponentData {
         public float Cooldown;
         public float CooldownTimer;
+        public float AttackDistance;
+        public float AttackDistanceSquared;
         public int Damage;
+        public float3 ProjectileOffset;
     }
     
     public struct Health : IComponentData {
         public int Value;
+    }
+    
+    public struct AttackTargetOffset : IComponentData {
+        public float3 Value;
     }
 }

@@ -16,7 +16,7 @@ namespace rts.authoring {
                     TargetLayers = authoring.targetLayers,
                     TargetFaction = authoring.targetFaction
                 });
-                AddComponent<AttackTarget>(entity);
+                AddComponent<Target>(entity);
             }
         }
     }

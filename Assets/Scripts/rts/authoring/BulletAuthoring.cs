@@ -13,7 +13,7 @@ namespace rts.authoring {
                 AddComponent(entity, new BulletData() {
                     Speed = authoring.bulletSpeed
                 });
-                AddComponent<AttackTarget>(entity);
+                AddComponent<Target>(entity);
             }
         }
     }

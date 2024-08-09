@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1666099119621483648
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 838564227000584177}
+  m_Layer: 7
+  m_Name: BulletOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &838564227000584177
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1666099119621483648}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.255, y: 1.926, z: 1.974}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4744644874246550288}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6243592890857829609
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,7 +131,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -2866463872960427021, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       propertyPath: targetingRange
-      value: 10
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: -2866463872960427021, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       propertyPath: targetLayers.m_Bits
@@ -168,7 +199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8186864340213345679, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       propertyPath: rotationSpeed
-      value: 15
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -176,6 +207,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6559370907366787099, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       insertIndex: 0
       addedObject: {fileID: 6059804209197702728}
+    - targetCorrespondingSourceObject: {fileID: 6559370907366787099, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 838564227000584177}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 41747748104769207, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       insertIndex: -1
@@ -232,7 +266,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cooldown: 0.2
+  attackDistance: 9
   damage: 5
+  projectileOrigin: {fileID: 838564227000584177}
 --- !u!4 &4744644874246550288 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6559370907366787099, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}

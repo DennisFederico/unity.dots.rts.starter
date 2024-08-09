@@ -16,7 +16,6 @@ namespace rts.authoring {
                 });
                 AddComponent(entity, new MoveDestination() { Value = authoring.transform.position });
                 AddComponent<ShouldMove>(entity);
-                SetComponentEnabled<ShouldMove>(entity, false);
             }
         }
     }

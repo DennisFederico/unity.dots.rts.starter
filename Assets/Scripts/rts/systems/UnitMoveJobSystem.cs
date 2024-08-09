@@ -23,7 +23,7 @@ namespace rts.systems {
             state.Dependency = new UnitMoveJob {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 Ecb = ecb.AsParallelWriter(),
-                StoppingDistance = 1f
+                StoppingDistance = 0.1f
             }.ScheduleParallel(state.Dependency);
         }
 
@@ -34,14 +34,13 @@ namespace rts.systems {
     }
     
     [BurstCompile]
-    [WithAll(typeof(ShouldMove))]
     public partial struct UnitMoveJob : IJobEntity {
         
         public float DeltaTime;
         public EntityCommandBuffer.ParallelWriter Ecb;
         public float StoppingDistance;
 
-        private void Execute(ref LocalTransform transform, in MoveData moveData, in MoveDestination destination, ref PhysicsVelocity physicsVelocity) {
+        private void Execute(ref LocalTransform transform, in MoveData moveData, ref MoveDestination destination, ref ShouldMove shouldMove, ref PhysicsVelocity physicsVelocity) {
             
             var direction = destination.Value - transform.Position;
             
@@ -49,8 +48,7 @@ namespace rts.systems {
             if (math.lengthsq(direction) < StoppingDistance) {
                 physicsVelocity.Angular = float3.zero;
                 physicsVelocity.Linear = float3.zero;
-                // Ecb.SetComponentEnabled<ShouldMove>(index, entity, false);
-                // Debug.Log($"Stopping unit {entity} at {transform.Position}");
+                shouldMove.Value = false;
                 return;
             }
             

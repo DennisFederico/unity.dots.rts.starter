@@ -51,7 +51,7 @@ namespace rts.mono {
                 if (selectionArea > minSelectionArea) {
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<UnitTag, LocalTransform>()
-                        .WithPresent<Selected, ShouldMove>()
+                        .WithPresent<Selected>()
                         .Build(_entityManager);
 
 
@@ -63,9 +63,6 @@ namespace rts.mono {
                             _entityManager.SetComponentEnabled<Selected>(entityArray[i], true);
                         }
                     }
-
-                    // entityQuery.CopyFromComponentDataArray(positions);
-                    // _entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
                 } else {
                     var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton))
                         .GetSingleton<PhysicsWorldSingleton>();
@@ -92,26 +89,21 @@ namespace rts.mono {
                 var targetPosition = MouseWorldPosition.Instance.GetPosition();
                 //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                 var entityQuery = new EntityQueryBuilder(Allocator.Temp)
-                    .WithAll<MoveData, MoveDestination, Selected>()
-                    .WithPresent<ShouldMove>()
+                    .WithAll<MoveData, MoveDestination, Selected, ShouldMove>()
                     .Build(_entityManager);
 
                 var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
                 var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
                 
                 for (var i = 0; i < destinationArray.Length; i++) {
-                    // destinationArray[i] = new MoveDestination { Value = targetPosition };
                     destinationArray[i] = new MoveDestination { Value = targetPositions[i] };
                 }
 
                 entityQuery.CopyFromComponentDataArray(destinationArray);
-                _entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
-
-                // var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
-                // foreach (var entity in entityArray) {
-                //     _entityManager.SetComponentData(entity, new MoveDestination { Value = targetPosition });
-                //     _entityManager.SetComponentEnabled<ShouldMove>(entity, true);
-                // }
+                
+                var shouldMoves = new ShouldMove[entityQuery.CalculateEntityCount()];
+                Array.Fill(shouldMoves, new ShouldMove { Value = true });
+                entityQuery.CopyFromComponentDataArray(new NativeArray<ShouldMove>(shouldMoves, Allocator.Temp));
             }
         }
 

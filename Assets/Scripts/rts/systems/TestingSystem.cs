@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace rts.systems {
     
-    // [DisableAutoCreation]
+    [DisableAutoCreation]
     public partial struct TestingSystem : ISystem {
 
         private EntityQuery _query;
@@ -15,7 +15,7 @@ namespace rts.systems {
         public void OnCreate(ref SystemState state) {
             _query = SystemAPI.QueryBuilder()
                 // .WithAll<EnemyTag>()
-                .WithAll<TargetingData, LocalTransform, AttackTarget>()
+                .WithAll<TargetingData, LocalTransform, Target>()
                 .Build();
         }
 
