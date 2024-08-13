@@ -42,7 +42,8 @@ namespace rts.systems {
                 if (newDistanceSq < 0.1f || newDistanceSq > prevDistanceSq) {
                     bulletTransform.ValueRW.Position = targetPosition;
                     var health = SystemAPI.GetComponentRW<Health>(target.ValueRO.Value);
-                    health.ValueRW.Value -= bulletData.ValueRO.Damage;
+                    // health.ValueRW.Value -= bulletData.ValueRO.Damage;
+                    health.ValueRW.ApplyDamage(bulletData.ValueRO.Damage);
                     ecb.DestroyEntity(bulletEntity);
                 } else {
                     bulletTransform.ValueRW.Position = newBulletPosition;

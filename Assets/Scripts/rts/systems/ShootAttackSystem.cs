@@ -21,9 +21,9 @@ namespace rts.systems {
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             var entityReferences = SystemAPI.GetSingleton<EntityReferences>();
 
-            foreach (var (localTransform, attack, target, shouldMove, destination, moveData) in 
-                     SystemAPI.Query <RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<MoveData>>()) {
-
+            foreach (var (localTransform, attack, target, shouldMove, destination) in 
+                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>>()) {
+//              SystemAPI.Query <RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<MoveData>>()
                 //Are we moving?
                 if (shouldMove.ValueRO.Value) continue;
 
@@ -43,7 +43,7 @@ namespace rts.systems {
                 var enemyPosition = targetTransform.ValueRO.Position;
                 var dirToEnemy = math.normalize(enemyPosition - localPosition);
                 // var distanceSquared = math.distancesq(localTransform.ValueRO.Position,  targetLocalTransform.Position);
-                var distanceSq = math.distancesq(localPosition,  enemyPosition);
+                float distanceSq = math.distancesq(localPosition,  enemyPosition);
                 if (distanceSq > attack.ValueRO.AttackDistanceSquared) {
                     //Target too far - get in range
                     var distanceVector = dirToEnemy * -1 * attack.ValueRO.AttackDistance * .9f;
@@ -69,6 +69,9 @@ namespace rts.systems {
                         Speed = 100f,
                         Damage = attack.ValueRO.Damage
                     });
+                    
+                    var muzzleFlash = ecb.Instantiate(entityReferences.ShootLightPrefab);
+                    ecb.SetComponent(muzzleFlash, LocalTransform.FromPositionRotation(shootOrigin, bulletRotation));
                     
                     //Restart Cooldown
                     attack.ValueRW.CooldownTimer = attack.ValueRW.Cooldown;

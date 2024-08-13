@@ -59,9 +59,25 @@ namespace rts.components {
     
     public struct Health : IComponentData {
         public int Value;
+        public int MaxValue;
+        public bool HasChanged;
+
+        public void ApplyDamage(int damage) {
+            Value -= damage;
+            HasChanged = true;
+        }
     }
     
     public struct AttackTargetOffset : IComponentData {
         public float3 Value;
     }
+
+    public struct MeleeAttack : IComponentData {
+        public float Timer;
+        public float TimerMax;
+        public float TouchDistance;
+        public float AttackDistanceSq;
+        public int Damage;
+    }
+
 }

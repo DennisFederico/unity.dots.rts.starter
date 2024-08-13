@@ -267,7 +267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cooldown: 0.2
   attackDistance: 9
-  damage: 5
+  damage: 15
   projectileOrigin: {fileID: 838564227000584177}
 --- !u!4 &4744644874246550288 stripped
 Transform:

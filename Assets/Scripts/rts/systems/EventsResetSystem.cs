@@ -1,9 +1,9 @@
+using rts.components;
 using Unity.Burst;
 using Unity.Entities;
 
 namespace rts.systems {
     
-    [DisableAutoCreation]
     [UpdateInGroup(typeof(LateSimulationSystemGroup), OrderLast = true)]
     public partial struct EventsResetSystem : ISystem {
         [BurstCompile]
@@ -13,10 +13,9 @@ namespace rts.systems {
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            // foreach (var selected in SystemAPI.Query<RefRW<Selected>>().WithPresent<Selected>()) {
-            //     selected.ValueRW.OnSelected = false;
-            //     selected.ValueRW.OnDeselected = false;
-            // }
+            foreach (var health in SystemAPI.Query<RefRW<Health>>()) {
+                health.ValueRW.HasChanged = false;
+            }
         }
 
         [BurstCompile]
