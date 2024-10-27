@@ -1,5 +1,4 @@
 using rts.components;
-using rts.mono;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -16,9 +15,11 @@ namespace rts.systems {
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            foreach (var (localTransform, meleeAttack, target, shouldMove, moveDestination, targetingData) in
+            foreach (var (localTransform, meleeAttack, target, moveDestination, targetingData, entity) in
                      SystemAPI
-                         .Query<RefRW<LocalTransform>, RefRW<MeleeAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<TargetingData>>()) {
+                         .Query<RefRW<LocalTransform>, RefRW<MeleeAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<TargetingData>>()
+                         .WithPresent<ShouldMove>()
+                         .WithEntityAccess()) {
                 if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
                     continue;
                 }
@@ -54,11 +55,13 @@ namespace rts.systems {
 
                 if (!touching && !closeToTarget) {
                     //Target too far
-                    shouldMove.ValueRW.Value = true;
+                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, true);
+                    // shouldMove.ValueRW.Value = true;
                     moveDestination.ValueRW.Value = targetLocalTransform.ValueRO.Position;
                 } else {
                     //Target close
-                    shouldMove.ValueRW.Value = false;
+                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, false);
+                    // shouldMove.ValueRW.Value = false;
                     moveDestination.ValueRW.Value = localTransform.ValueRO.Position;
                     meleeAttack.ValueRW.Timer -= SystemAPI.Time.DeltaTime;
 

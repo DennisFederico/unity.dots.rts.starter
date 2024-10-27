@@ -6,6 +6,7 @@ namespace rts.mono {
         public const int SoldiersLayer = 7;
         public const int ZombiesLayer = 8;
         public const uint Selectable = 1 << UnitsLayer | 1 << SoldiersLayer;
+        public const uint Zombie = 1 << UnitsLayer | 1 << ZombiesLayer;
         
         public static GameConstants Instance { get; private set; }
 

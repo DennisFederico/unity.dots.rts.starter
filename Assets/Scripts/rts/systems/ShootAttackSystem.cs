@@ -21,11 +21,13 @@ namespace rts.systems {
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             var entityReferences = SystemAPI.GetSingleton<EntityReferences>();
 
-            foreach (var (localTransform, attack, target, shouldMove, destination) in 
-                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>>()) {
+            foreach (var (localTransform, attack, target, destination, entity) in 
+                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>>()
+                         .WithPresent<ShouldMove>()
+                         .WithEntityAccess()) {
 //              SystemAPI.Query <RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<MoveData>>()
                 //Are we moving?
-                if (shouldMove.ValueRO.Value) continue;
+                if (state.EntityManager.IsComponentEnabled<ShouldMove>(entity)) continue;
 
                 //On Cool-Down
                 attack.ValueRW.CooldownTimer -= SystemAPI.Time.DeltaTime;
@@ -48,7 +50,7 @@ namespace rts.systems {
                     //Target too far - get in range
                     var distanceVector = dirToEnemy * -1 * attack.ValueRO.AttackDistance * .9f;
                     destination.ValueRW.Value = enemyPosition + distanceVector;
-                    shouldMove.ValueRW.Value = true;
+                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, true);
                 } else {
                     //In Range - Rotate to target and Spawn bullet
                     var lookRotation = quaternion.LookRotationSafe(dirToEnemy, math.up());

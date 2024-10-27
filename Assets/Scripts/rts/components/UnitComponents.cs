@@ -8,8 +8,7 @@ namespace rts.components {
         public float RotationSpeed;
     }
 
-    public struct ShouldMove : IComponentData {
-        public bool Value;
+    public struct ShouldMove : IComponentData, IEnableableComponent {
     }
     
     public struct MoveDestination : IComponentData {
@@ -48,6 +47,11 @@ namespace rts.components {
         public float3 AttackOffset;
     }
     
+    public struct TargetOverride : IComponentData {
+        public Entity Value;
+        public float3 AttackOffset;
+    }
+
     public struct ShootAttack : IComponentData {
         public float Cooldown;
         public float CooldownTimer;
@@ -56,7 +60,23 @@ namespace rts.components {
         public int Damage;
         public float3 ProjectileOffset;
     }
+
+    public struct MeleeAttack : IComponentData {
+        public float Timer;
+        public float TimerMax;
+        public float TouchDistance;
+        public float AttackDistanceSq;
+        public int Damage;
+    }
     
+    public struct LoseTargetDistance : IComponentData {
+        public float Value;
+    }
+    
+    public struct AttackTargetOffset : IComponentData {
+        public float3 Value;
+    }
+
     public struct Health : IComponentData {
         public int Value;
         public int MaxValue;
@@ -67,17 +87,4 @@ namespace rts.components {
             HasChanged = true;
         }
     }
-    
-    public struct AttackTargetOffset : IComponentData {
-        public float3 Value;
-    }
-
-    public struct MeleeAttack : IComponentData {
-        public float Timer;
-        public float TimerMax;
-        public float TouchDistance;
-        public float AttackDistanceSq;
-        public int Damage;
-    }
-
 }

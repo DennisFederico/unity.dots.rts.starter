@@ -212,6 +212,9 @@ PrefabInstance:
       addedObject: {fileID: 838564227000584177}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 41747748104769207, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      insertIndex: 6
+      addedObject: {fileID: 138017122696582308}
+    - targetCorrespondingSourceObject: {fileID: 41747748104769207, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8567957010331875115}
     - targetCorrespondingSourceObject: {fileID: 41747748104769207, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
@@ -226,6 +229,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 41747748104769207, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
   m_PrefabInstance: {fileID: 1936490981540428555}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &138017122696582308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1894780771668063676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2792c1cfb83c4871af0739e8c2bafb4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  distance: 15
 --- !u!114 &8567957010331875115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,7 +282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cooldown: 0.2
-  attackDistance: 9
+  attackDistance: 11
   damage: 15
   projectileOrigin: {fileID: 838564227000584177}
 --- !u!4 &4744644874246550288 stripped

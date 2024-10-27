@@ -36,6 +36,7 @@ namespace rts.mono {
 
             if (Input.GetMouseButtonUp(0)) {
                 // Vector2 selectionEnd = Input.mousePosition;
+
                 var selectedUnits = new EntityQueryBuilder(Allocator.Temp)
                     .WithAll<UnitTag, Selected>()
                     .Build(_entityManager);
@@ -64,9 +65,7 @@ namespace rts.mono {
                         }
                     }
                 } else {
-                    var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton))
-                        .GetSingleton<PhysicsWorldSingleton>();
-                    //pws.CollisionWorld.CastRay();
+                    var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
                     var screenPointRay = _currentCamera.ScreenPointToRay(Input.mousePosition);
                     var rayCastInput = new RaycastInput {
                         Start = screenPointRay.origin,
@@ -86,24 +85,56 @@ namespace rts.mono {
             }
 
             if (Input.GetMouseButtonDown(1)) {
-                var targetPosition = MouseWorldPosition.Instance.GetPosition();
-                //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
-                var entityQuery = new EntityQueryBuilder(Allocator.Temp)
-                    .WithAll<MoveData, MoveDestination, Selected, ShouldMove>()
-                    .Build(_entityManager);
+                //RIGHT CLICK A ZOMBIE?
+                var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
+                var screenPointRay = _currentCamera.ScreenPointToRay(Input.mousePosition);
+                var rayCastInput = new RaycastInput {
+                    Start = screenPointRay.origin,
+                    End = screenPointRay.GetPoint(1000f),
+                    Filter = new CollisionFilter {
+                        BelongsTo = ~0u,
+                        CollidesWith = GameConstants.Zombie,
+                        GroupIndex = 0
+                    }
+                };
+                if (pws.CastRay(rayCastInput, out var hit)) {
+                    var offset = _entityManager.HasComponent<AttackTargetOffset>(hit.Entity) ?
+                        _entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value :
+                        new float3(0, 0, 1.5f);
 
-                var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
-                var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
-                
-                for (var i = 0; i < destinationArray.Length; i++) {
-                    destinationArray[i] = new MoveDestination { Value = targetPositions[i] };
+                    //Check Faction or any other attribute on the selected target?
+                    var selectedWithTargetOverride = new EntityQueryBuilder(Allocator.Temp)
+                        .WithAll<Selected>().WithPresent<TargetOverride, ShouldMove>()
+                        .Build(_entityManager);
+                    var targetOverrides = selectedWithTargetOverride.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+                    for (var i = 0; i < targetOverrides.Length; i++) {
+                        targetOverrides[i] = new TargetOverride() {
+                            Value = hit.Entity,
+                            AttackOffset = offset
+                        };
+                    }
+                    selectedWithTargetOverride.CopyFromComponentDataArray(targetOverrides);
+                    _entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, false);
+                } else {
+                    //Try to move...
+                    var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                    //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
+                    var entityQuery = new EntityQueryBuilder(Allocator.Temp)
+                        .WithAll<MoveData, MoveDestination, Selected>().WithPresent<ShouldMove, TargetOverride>()
+                        .Build(_entityManager);
+
+                    var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
+                    var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
+                    var targetOverrides = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+
+                    for (var i = 0; i < destinationArray.Length; i++) {
+                        destinationArray[i] = new MoveDestination { Value = targetPositions[i] };
+                        targetOverrides[i] = new TargetOverride() { Value = Entity.Null };
+                    }
+                    entityQuery.CopyFromComponentDataArray(destinationArray);
+                    _entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
+                    entityQuery.CopyFromComponentDataArray(targetOverrides);
                 }
-
-                entityQuery.CopyFromComponentDataArray(destinationArray);
-                
-                var shouldMoves = new ShouldMove[entityQuery.CalculateEntityCount()];
-                Array.Fill(shouldMoves, new ShouldMove { Value = true });
-                entityQuery.CopyFromComponentDataArray(new NativeArray<ShouldMove>(shouldMoves, Allocator.Temp));
             }
         }
 
@@ -160,24 +191,23 @@ namespace rts.mono {
         //     
         //     return positions;
         // }
-        
+
         private NativeArray<float3> GenerateRandomRingsTargetPositions(int count, float3 target) {
             var positions = new NativeArray<float3>(count, Allocator.Temp);
             if (count == 0) return positions;
-            
+
             //First position is the actual target
             positions[0] = target;
             int currentIndex = 1;
-            
+
             //First ring will have 4 positions, and each additional ring will have 2 more positions than the previous ring
             float ringRadius = 2.8f;
             int currentRing = 0;
             int allocatablePositions = 0;
             float angleStep = 0f;
             float3 initialVector = 0f;
-            
-            while (currentIndex < count) {
 
+            while (currentIndex < count) {
                 if (allocatablePositions == 0) {
                     allocatablePositions = 4 + 2 * currentRing;
                     currentRing++;
@@ -185,8 +215,8 @@ namespace rts.mono {
                     initialVector = new float3 {
                         x = ringRadius * currentRing * math.cos(initialAngle),
                         y = 0,
-                        z = ringRadius * currentRing *  math.sin(initialAngle)
-                    }; 
+                        z = ringRadius * currentRing * math.sin(initialAngle)
+                    };
                     angleStep = math.PI2 / allocatablePositions;
                 }
 
@@ -195,7 +225,7 @@ namespace rts.mono {
                 currentIndex++;
                 allocatablePositions--;
             }
-            
+
             return positions;
         }
     }

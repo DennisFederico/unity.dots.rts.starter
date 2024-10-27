@@ -20,29 +20,34 @@ namespace rts.systems {
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-
-            foreach (var (targetingData, localTransform, attackTarget) in
-                     SystemAPI.Query<RefRO<TargetingData>, RefRO<LocalTransform>, RefRW<Target>>()) {
+            var defaultOffset =  new float3(0,0,1.5f);
+            
+            foreach (var (targetingData, localTransform, target, targetOverride) in
+                     SystemAPI.Query<RefRO<TargetingData>, RefRO<LocalTransform>, RefRW<Target>, RefRO<TargetOverride>>()) {
+                
+                if (targetOverride.ValueRO.Value != Entity.Null) {
+                    target.ValueRW.Value = targetOverride.ValueRO.Value;
+                    target.ValueRW.AttackOffset = targetOverride.ValueRO.AttackOffset;
+                    continue;
+                }
                 
                 var collisionFilter = new CollisionFilter {
                     BelongsTo = ~0u,
                     CollidesWith = (uint) targetingData.ValueRO.TargetLayers.value,
                     GroupIndex = 0
                 };
-                
+
                 var closestHitCollector = new ClosestHitCollector<DistanceHit>(targetingData.ValueRO.Range);
                 if (collisionWorld.OverlapSphereCustom(localTransform.ValueRO.Position, targetingData.ValueRO.Range, ref closestHitCollector, collisionFilter) && 
-                    SystemAPI.HasComponent<LocalTransform>(closestHitCollector.ClosestHit.Entity)) {
+                    SystemAPI.HasComponent<LocalTransform>(closestHitCollector.ClosestHit.Entity)) { 
                     
-                    attackTarget.ValueRW.Value = closestHitCollector.ClosestHit.Entity;
-                    var offset =  new float3(0,0,1.5f);
-                    if (SystemAPI.HasComponent<AttackTargetOffset>(closestHitCollector.ClosestHit.Entity)) {
-                        offset = SystemAPI.GetComponent<AttackTargetOffset>(closestHitCollector.ClosestHit.Entity).Value;
-                    }
-                    attackTarget.ValueRW.AttackOffset = offset;
+                    target.ValueRW.Value = closestHitCollector.ClosestHit.Entity;
+                    var offset =  SystemAPI.HasComponent<AttackTargetOffset>(closestHitCollector.ClosestHit.Entity) ? 
+                        SystemAPI.GetComponent<AttackTargetOffset>(closestHitCollector.ClosestHit.Entity).Value : defaultOffset;
+                    target.ValueRW.AttackOffset = offset;
                 } else {
-                    attackTarget.ValueRW.Value = Entity.Null;
-                    attackTarget.ValueRW.AttackOffset = float3.zero;
+                    target.ValueRW.Value = Entity.Null;
+                    target.ValueRW.AttackOffset = float3.zero;
                 }
             }
         }
