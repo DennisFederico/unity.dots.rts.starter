@@ -21,8 +21,8 @@ namespace rts.systems {
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             var entityReferences = SystemAPI.GetSingleton<EntityReferences>();
 
-            foreach (var (localTransform, attack, target, destination, entity) in 
-                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>>()
+            foreach (var (localTransform, attack, target, destination, targetOffset, entity) in 
+                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<AttackTargetOffset>>()
                          .WithPresent<ShouldMove>()
                          .WithEntityAccess()) {
 //              SystemAPI.Query <RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<MoveData>>()
@@ -34,10 +34,7 @@ namespace rts.systems {
                 if (attack.ValueRW.CooldownTimer > 0) continue;
 
                 //Have target?
-                if (target.ValueRO.Value == Entity.Null) continue;
-
-                //Is Target Valid?
-                if (!SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) continue;
+                if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) continue;
                 
                 //Check distance
                 var localPosition = localTransform.ValueRO.Position;
@@ -78,6 +75,12 @@ namespace rts.systems {
                     //Restart Cooldown
                     attack.ValueRW.CooldownTimer = attack.ValueRW.Cooldown;
                 }
+                
+                //Make target aware - TODO this should be onHit, not onShoot
+                var enemyTarget = SystemAPI.GetComponentRW<TargetOverride>(target.ValueRO.Value);
+                if (enemyTarget.ValueRO.Value != Entity.Null && SystemAPI.HasComponent<LocalTransform>(enemyTarget.ValueRO.Value)) continue;
+                enemyTarget.ValueRW.Value = entity;
+                enemyTarget.ValueRW.AttackOffset = targetOffset.ValueRO.Value;
             }
         }
 
