@@ -16,7 +16,10 @@ namespace rts.systems {
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            foreach (var (localTransform, loseDistance, target, targetOverride) in
+            foreach (var (localTransform, 
+                         loseDistance, 
+                         target, 
+                         targetOverride) in
                      SystemAPI.Query<RefRO<LocalTransform>, RefRO<LoseTargetDistance>, RefRW<Target>, RefRO<TargetOverride>>()) {
                 
                 if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) continue;
@@ -25,6 +28,7 @@ namespace rts.systems {
                 if (distance < loseDistance.ValueRO.Value) continue;
                 target.ValueRW.Value = Entity.Null;
                 target.ValueRW.AttackOffset = float3.zero;
+                //TODO should we loose also the Target Override??
             }
         }
 

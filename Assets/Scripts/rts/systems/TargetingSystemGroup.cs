@@ -9,7 +9,7 @@ namespace rts.systems {
     
     public partial class TargetingSystemGroup : ComponentSystemGroup {
         public TargetingSystemGroup() {
-            SetRateManagerCreateAllocator(new RateUtils.FixedRateCatchUpManager(1.5f));
+            SetRateManagerCreateAllocator(new RateUtils.FixedRateCatchUpManager(.5f));
         }
     }
 }

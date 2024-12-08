@@ -22,7 +22,10 @@ namespace rts.systems {
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             var defaultOffset =  new float3(0,0,1.5f);
             
-            foreach (var (targetingData, localTransform, target, targetOverride) in
+            foreach (var (targetingData, 
+                         localTransform, 
+                         target, 
+                         targetOverride) in
                      SystemAPI.Query<RefRO<TargetingData>, RefRO<LocalTransform>, RefRW<Target>, RefRO<TargetOverride>>()) {
                 
                 if (targetOverride.ValueRO.Value != Entity.Null) {

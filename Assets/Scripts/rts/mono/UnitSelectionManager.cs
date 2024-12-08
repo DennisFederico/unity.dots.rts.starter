@@ -15,33 +15,35 @@ namespace rts.mono {
         public event EventHandler OnSelectionStart;
         public event EventHandler OnSelectionEnd;
 
-        private EntityManager _entityManager;
-        private Vector2 _selectionStartPosition;
-        private Camera _currentCamera;
+        private EntityManager entityManager;
+        private Vector2 selectionStartPosition;
+        private Camera currentCamera;
 
         private void Awake() {
             Instance = this;
         }
 
         private void Start() {
-            _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-            _currentCamera = Camera.main;
+            entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+            currentCamera = Camera.main;
         }
 
         private void Update() {
+            //Left-click Hold
             if (Input.GetMouseButtonDown(0)) {
-                _selectionStartPosition = Input.mousePosition;
+                selectionStartPosition = Input.mousePosition;
                 OnSelectionStart?.Invoke(this, EventArgs.Empty);
             }
 
+            //Left-click Release
             if (Input.GetMouseButtonUp(0)) {
                 // Vector2 selectionEnd = Input.mousePosition;
 
                 var selectedUnits = new EntityQueryBuilder(Allocator.Temp)
                     .WithAll<UnitTag, Selected>()
-                    .Build(_entityManager);
+                    .Build(entityManager);
                 foreach (var selectedUnit in selectedUnits.ToEntityArray(Allocator.Temp)) {
-                    _entityManager.SetComponentEnabled<Selected>(selectedUnit, false);
+                    entityManager.SetComponentEnabled<Selected>(selectedUnit, false);
                 }
 
                 //HANDLE SELECTION TYPE (SINGLE OR MULTIPLE)
@@ -53,20 +55,20 @@ namespace rts.mono {
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<UnitTag, LocalTransform>()
                         .WithPresent<Selected>()
-                        .Build(_entityManager);
+                        .Build(entityManager);
 
 
                     var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                     var positions = entityQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
                     for (var i = 0; i < positions.Length; i++) {
-                        Vector2 unitScreenPoint = _currentCamera.WorldToScreenPoint(positions[i].Position);
+                        Vector2 unitScreenPoint = currentCamera.WorldToScreenPoint(positions[i].Position);
                         if (selectionRect.Contains(unitScreenPoint)) {
-                            _entityManager.SetComponentEnabled<Selected>(entityArray[i], true);
+                            entityManager.SetComponentEnabled<Selected>(entityArray[i], true);
                         }
                     }
                 } else {
-                    var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
-                    var screenPointRay = _currentCamera.ScreenPointToRay(Input.mousePosition);
+                    var pws = entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
+                    var screenPointRay = currentCamera.ScreenPointToRay(Input.mousePosition);
                     var rayCastInput = new RaycastInput {
                         Start = screenPointRay.origin,
                         End = screenPointRay.GetPoint(1000f),
@@ -76,18 +78,20 @@ namespace rts.mono {
                             GroupIndex = 0
                         }
                     };
-                    if (pws.CastRay(rayCastInput, out var closestHit) && _entityManager.HasComponent<UnitTag>(closestHit.Entity)) {
-                        _entityManager.SetComponentEnabled<Selected>(closestHit.Entity, true);
+                    if (pws.CastRay(rayCastInput, out var closestHit) && entityManager.HasComponent<UnitTag>(closestHit.Entity)) {
+                        entityManager.SetComponentEnabled<Selected>(closestHit.Entity, true);
                     }
                 }
 
                 OnSelectionEnd?.Invoke(this, EventArgs.Empty);
             }
 
+            //Right-click
             if (Input.GetMouseButtonDown(1)) {
-                //RIGHT CLICK A ZOMBIE?
-                var pws = _entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
-                var screenPointRay = _currentCamera.ScreenPointToRay(Input.mousePosition);
+
+                //Raycast the right-click
+                var pws = entityManager.CreateEntityQuery(typeof(PhysicsWorldSingleton)).GetSingleton<PhysicsWorldSingleton>();
+                var screenPointRay = currentCamera.ScreenPointToRay(Input.mousePosition);
                 var rayCastInput = new RaycastInput {
                     Start = screenPointRay.origin,
                     End = screenPointRay.GetPoint(1000f),
@@ -97,15 +101,16 @@ namespace rts.mono {
                         GroupIndex = 0
                     }
                 };
+                
+                //Is it a enemy?
                 if (pws.CastRay(rayCastInput, out var hit)) {
-                    var offset = _entityManager.HasComponent<AttackTargetOffset>(hit.Entity) ?
-                        _entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value :
-                        new float3(0, 0, 1.5f);
+                    var offset = entityManager.HasComponent<AttackTargetOffset>(hit.Entity) ?
+                        entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value : new float3(0, 0, 1.5f);
 
                     //Check Faction or any other attribute on the selected target?
                     var selectedWithTargetOverride = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<Selected>().WithPresent<TargetOverride, ShouldMove>()
-                        .Build(_entityManager);
+                        .Build(entityManager);
                     var targetOverrides = selectedWithTargetOverride.ToComponentDataArray<TargetOverride>(Allocator.Temp);
                     for (var i = 0; i < targetOverrides.Length; i++) {
                         targetOverrides[i] = new TargetOverride() {
@@ -114,14 +119,14 @@ namespace rts.mono {
                         };
                     }
                     selectedWithTargetOverride.CopyFromComponentDataArray(targetOverrides);
-                    _entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, false);
+                    entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, false);
                 } else {
                     //Try to move...
                     var targetPosition = MouseWorldPosition.Instance.GetPosition();
                     //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<MoveData, MoveDestination, Selected>().WithPresent<ShouldMove, TargetOverride>()
-                        .Build(_entityManager);
+                        .Build(entityManager);
 
                     var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
                     var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
@@ -132,7 +137,7 @@ namespace rts.mono {
                         targetOverrides[i] = new TargetOverride() { Value = Entity.Null };
                     }
                     entityQuery.CopyFromComponentDataArray(destinationArray);
-                    _entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
+                    entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
                     entityQuery.CopyFromComponentDataArray(targetOverrides);
                 }
             }
@@ -142,12 +147,12 @@ namespace rts.mono {
             Vector2 selectionEndPosition = Input.mousePosition;
 
             var lowerLeftCorner = new Vector2(
-                math.min(_selectionStartPosition.x, selectionEndPosition.x),
-                math.min(_selectionStartPosition.y, selectionEndPosition.y)
+                math.min(selectionStartPosition.x, selectionEndPosition.x),
+                math.min(selectionStartPosition.y, selectionEndPosition.y)
             );
             var upperRightCorner = new Vector2(
-                math.max(_selectionStartPosition.x, selectionEndPosition.x),
-                math.max(_selectionStartPosition.y, selectionEndPosition.y)
+                math.max(selectionStartPosition.x, selectionEndPosition.x),
+                math.max(selectionStartPosition.y, selectionEndPosition.y)
             );
 
             return new Rect(
