@@ -18,7 +18,7 @@ namespace rts.systems {
         
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
-            localTransformsLookup = state.GetComponentLookup<LocalTransform>();
+            localTransformsLookup = state.GetComponentLookup<LocalTransform>(true);
             entityStorageInfoLookup = state.GetEntityStorageInfoLookup();
         }
 
