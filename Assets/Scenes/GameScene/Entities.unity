@@ -701,9 +701,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa78ef685c34c3da13fccd1c448f020, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animationDataSO:
-  - {fileID: 11400000, guid: 176aec3843afc4566896a5730fcf43dd, type: 2}
-  - {fileID: 11400000, guid: 66bd29277595a4c4dbba4065030eaa71, type: 2}
+  animationDataList: {fileID: 11400000, guid: 0e3eed5393e72472c9dae872396a461a, type: 2}
 --- !u!4 &1406367374
 Transform:
   m_ObjectHideFlags: 0
