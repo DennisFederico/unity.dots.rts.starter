@@ -1,9 +1,7 @@
 using rts.authoring;
-using rts.scriptable;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Rendering;
-using UnityEngine;
 
 namespace rts.systems {
     public partial struct ActiveAnimationSystem : ISystem {
@@ -18,14 +16,6 @@ namespace rts.systems {
 
             foreach (var (activeAnimation, materialMeshInfo)
                      in SystemAPI.Query<RefRW<ActiveAnimation>, RefRW<MaterialMeshInfo>>()) {
-                
-                if (Input.GetKeyDown(KeyCode.I)) {
-                    activeAnimation.ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierIdle;
-                }
-                
-                if (Input.GetKeyDown(KeyCode.W)) {
-                    activeAnimation.ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierWalk;
-                }
 
                 //TODO Why don't keep a reference of the animation data array in the ActiveAnimation component
                 ref var animationData = ref animationDataHolder.AnimationDataArray.Value[(int) activeAnimation.ValueRO.ActiveAnimationType];

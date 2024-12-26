@@ -6,7 +6,7 @@ using Unity.Rendering;
 namespace rts.systems {
     
     [UpdateBefore(typeof(ActiveAnimationSystem))]
-    public partial struct ChangeActiveAnimationSystem : ISystem {
+    public partial struct ActiveAnimationChangeSystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
             state.RequireForUpdate<AnimationDataHolder>();
