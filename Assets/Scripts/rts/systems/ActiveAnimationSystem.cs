@@ -20,13 +20,14 @@ namespace rts.systems {
                      in SystemAPI.Query<RefRW<ActiveAnimation>, RefRW<MaterialMeshInfo>>()) {
                 
                 if (Input.GetKeyDown(KeyCode.I)) {
-                    activeAnimation.ValueRW.ActiveAnimationType = AnimationDataSO.AnimationType.SoldierIdle;
+                    activeAnimation.ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierIdle;
                 }
                 
                 if (Input.GetKeyDown(KeyCode.W)) {
-                    activeAnimation.ValueRW.ActiveAnimationType = AnimationDataSO.AnimationType.SoldierWalk;
+                    activeAnimation.ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierWalk;
                 }
 
+                //TODO Why don't keep a reference of the animation data array in the ActiveAnimation component
                 ref var animationData = ref animationDataHolder.AnimationDataArray.Value[(int) activeAnimation.ValueRO.ActiveAnimationType];
                 var valueTimerMax = animationData.TimerMax;
                 var valueFrameMax = animationData.FrameMax;
