@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Rendering;
 
 namespace rts.systems {
-    public partial struct ActiveAnimationSystem : ISystem {
+    public partial struct ActiveAnimationPlaySystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
             state.RequireForUpdate<AnimationDataHolder>();

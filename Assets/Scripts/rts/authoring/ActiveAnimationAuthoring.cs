@@ -1,7 +1,6 @@
 using rts.scriptable;
 using Unity.Entities;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace rts.authoring {
     public class ActiveAnimationAuthoring : MonoBehaviour {

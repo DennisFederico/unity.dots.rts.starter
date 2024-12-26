@@ -8,7 +8,9 @@ namespace rts.scriptable {
         public enum AnimationType {
             None,
             SoldierIdle,
-            SoldierWalk
+            SoldierWalk,
+            ZombieIdle,
+            ZombieWalk
         }
         
         public AnimationType animationType;

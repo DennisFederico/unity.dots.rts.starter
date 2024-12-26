@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 475363c9fb794621988170876b68a49f, type: 3}
-  m_Name: Soldier_Walking
+  m_Name: Zombie_Idle
   m_EditorClassIdentifier: 
-  animationType: 2
+  animationType: 3
   meshes:
-  - {fileID: 4300000, guid: 6e5308bd925f70147803dd3d808d5357, type: 2}
-  - {fileID: 4300000, guid: a94861c5d00b76c4bb31d76aec734804, type: 2}
-  - {fileID: 4300000, guid: be41e1bbabac24f4cb0f8c19897d1bd0, type: 2}
-  - {fileID: 4300000, guid: 7e80bf640308aba4bb8137f21eac07a9, type: 2}
-  timerMax: 0.15
+  - {fileID: 4300000, guid: 704f5ea696ef75944b30d5c8ec37f428, type: 2}
+  - {fileID: 4300000, guid: df8fb447f0ed85645b85d4f14274d82c, type: 2}
+  - {fileID: 4300000, guid: 57e97f108cef90448a9bd096ce862f2b, type: 2}
+  - {fileID: 4300000, guid: 4661aaf9b1976d141aa8fe113d423529, type: 2}
+  timerMax: 0.5

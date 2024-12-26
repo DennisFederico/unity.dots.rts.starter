@@ -5,7 +5,7 @@ using Unity.Rendering;
 
 namespace rts.systems {
     
-    [UpdateBefore(typeof(ActiveAnimationSystem))]
+    [UpdateBefore(typeof(ActiveAnimationPlaySystem))]
     public partial struct ActiveAnimationChangeSystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {

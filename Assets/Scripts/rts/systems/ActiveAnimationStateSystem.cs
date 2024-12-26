@@ -1,13 +1,12 @@
 ﻿using rts.authoring;
 using rts.components;
-using rts.scriptable;
 using Unity.Burst;
 using Unity.Entities;
 
 namespace rts.systems {
     
     [UpdateBefore(typeof(ActiveAnimationChangeSystem))]
-    public partial struct AnimationStateSystem : ISystem {
+    public partial struct ActiveAnimationStateSystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
             
@@ -16,11 +15,11 @@ namespace rts.systems {
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
 
-            foreach (var (_, animatedMeshEntity) in SystemAPI.Query<RefRO<ShouldMove>, RefRO<AnimatedMeshEntity>>()) {
-                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierWalk;
+            foreach (var (_, animatedMeshEntity, unitAnimations) in SystemAPI.Query<RefRO<ShouldMove>, RefRO<AnimatedMeshEntity>, RefRO<UnitAnimations>>()) {
+                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.WalkAnimationType;
             }
-            foreach (var animatedMeshEntity in SystemAPI.Query<RefRO<AnimatedMeshEntity>>().WithDisabled<ShouldMove>()) {
-                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = AnimationDataSO.AnimationType.SoldierIdle;
+            foreach (var (animatedMeshEntity, unitAnimations) in SystemAPI.Query<RefRO<AnimatedMeshEntity>, RefRO<UnitAnimations>>().WithDisabled<ShouldMove>()) {
+                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.IdleAnimationType;
             }
         }
 

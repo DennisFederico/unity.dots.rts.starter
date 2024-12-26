@@ -32,6 +32,18 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 421583632047326746, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      propertyPath: nextAnimationType
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2812957988049381793, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      propertyPath: idleAnimationType
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2812957988049381793, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      propertyPath: walkAnimationType
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 3490152896334287764, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       propertyPath: faction
       value: 1
