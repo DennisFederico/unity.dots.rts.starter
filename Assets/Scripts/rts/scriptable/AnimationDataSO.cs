@@ -13,6 +13,7 @@ namespace rts.scriptable {
             ZombieWalk,
             SoldierAim,
             SoldierShoot,
+            ZombieMeleeAttack,
         }
         
         public AnimationType animationType;

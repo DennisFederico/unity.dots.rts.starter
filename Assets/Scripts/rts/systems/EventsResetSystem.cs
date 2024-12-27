@@ -11,10 +11,7 @@ namespace rts.systems {
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             new ResetHealthChangeEventJob().ScheduleParallel();
-            // Moved to a JOB
-            // foreach (var health in SystemAPI.Query<RefRW<Health>>()) {
-            //     health.ValueRW.HasChanged = false;
-            // }
+            new ResetMeleeAttackJob().ScheduleParallel();
         }
 
         [BurstCompile]
@@ -25,7 +22,13 @@ namespace rts.systems {
     public partial struct ResetHealthChangeEventJob : IJobEntity {
         public void Execute(ref Health health) {
             health.HasChanged = false;
-
+        }
+    }
+    
+    [BurstCompile]
+    public partial struct ResetMeleeAttackJob : IJobEntity {
+        public void Execute(ref MeleeAttack meleeAttack) {
+            meleeAttack.OnAttack = false;
         }
     }
 }

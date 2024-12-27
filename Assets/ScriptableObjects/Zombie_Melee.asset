@@ -10,10 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 475363c9fb794621988170876b68a49f, type: 3}
-  m_Name: Soldier_Shoot
+  m_Name: Zombie_Melee
   m_EditorClassIdentifier: 
-  animationType: 6
+  animationType: 7
   meshes:
-  - {fileID: 4300000, guid: 68684d803c9d92344b4e9df8a54e10f1, type: 2}
-  - {fileID: 4300000, guid: e274e405c96af1740a3f6351f10189f9, type: 2}
-  timerMax: 0.1
+  - {fileID: 4300000, guid: a460ab35d4a33e146a062b6a1d2dbd6d, type: 2}
+  - {fileID: 4300000, guid: 158d4574a73479a499a4fe98e9d882e5, type: 2}
+  - {fileID: 4300000, guid: 7382161388f50de48a5cc84a9dc92833, type: 2}
+  - {fileID: 4300000, guid: 8069c9c06ebd7fd4bba0c2f182e8ae0d, type: 2}
+  timerMax: 0.25

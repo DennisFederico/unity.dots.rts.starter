@@ -2,7 +2,6 @@
 using rts.components;
 using Unity.Burst;
 using Unity.Entities;
-using UnityEngine;
 
 namespace rts.systems {
     
@@ -23,12 +22,18 @@ namespace rts.systems {
             
             foreach (var (_, animatedMeshEntity, unitAnimations) in 
                      SystemAPI.Query<RefRO<ShouldAttack>, RefRO<AnimatedMeshEntity>, RefRO<UnitAnimations>>().WithDisabled<ShouldMove>()) {
-                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.AttackAnimationType;
+                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.ShootAnimationType;
             }
 
             foreach (var (animatedMeshEntity, unitAnimations) in 
                      SystemAPI.Query<RefRO<AnimatedMeshEntity>, RefRO<UnitAnimations>>().WithDisabled<ShouldMove, ShouldAttack>()) {
                 SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.IdleAnimationType;
+            }
+            
+            foreach (var (meleeAttack, animatedMeshEntity, unitAnimations) in 
+                     SystemAPI.Query<RefRO<MeleeAttack>, RefRO<AnimatedMeshEntity>, RefRO<UnitAnimations>>().WithDisabled<ShouldMove>()) {
+                if (!meleeAttack.ValueRO.OnAttack) continue;
+                SystemAPI.GetComponentRW<ActiveAnimation>(animatedMeshEntity.ValueRO.Value).ValueRW.NextAnimationType = unitAnimations.ValueRO.MeleeAnimationType;
             }
         }
 

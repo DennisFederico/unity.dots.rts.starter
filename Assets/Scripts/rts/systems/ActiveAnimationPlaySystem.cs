@@ -1,4 +1,5 @@
 using rts.authoring;
+using rts.scriptable;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Rendering;
@@ -27,6 +28,10 @@ namespace rts.systems {
                 activeAnimation.ValueRW.TimerCurrent -= valueTimerMax;
                 activeAnimation.ValueRW.FrameCurrent = (activeAnimation.ValueRO.FrameCurrent + 1) % valueFrameMax;
                 materialMeshInfo.ValueRW.MeshID = animationData.MeshIds[activeAnimation.ValueRO.FrameCurrent];
+
+                if (activeAnimation.ValueRO is { FrameCurrent: 0, ActiveAnimationType: AnimationDataSO.AnimationType.ZombieMeleeAttack }) {
+                    activeAnimation.ValueRW.ActiveAnimationType = AnimationDataSO.AnimationType.None;
+                }
             }
         }
 

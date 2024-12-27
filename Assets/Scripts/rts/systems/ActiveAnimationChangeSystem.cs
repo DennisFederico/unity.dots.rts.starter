@@ -1,4 +1,5 @@
 using rts.authoring;
+using rts.scriptable;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Rendering;
@@ -18,6 +19,7 @@ namespace rts.systems {
                      in SystemAPI.Query<RefRW<ActiveAnimation>, RefRW<MaterialMeshInfo>>()) {
                 
                 if (activeAnimation.ValueRO.ActiveAnimationType == activeAnimation.ValueRO.NextAnimationType) continue;
+                if (activeAnimation.ValueRO.ActiveAnimationType == AnimationDataSO.AnimationType.ZombieMeleeAttack) continue;
                 
                 activeAnimation.ValueRW.ActiveAnimationType = activeAnimation.ValueRO.NextAnimationType;
                 activeAnimation.ValueRW.FrameCurrent = 0;

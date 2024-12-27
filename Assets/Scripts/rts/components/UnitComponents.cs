@@ -70,6 +70,7 @@ namespace rts.components {
         public float TouchDistance;
         public float AttackDistanceSq;
         public int Damage;
+        public bool OnAttack;
     }
     
     public struct LoseTargetDistance : IComponentData {

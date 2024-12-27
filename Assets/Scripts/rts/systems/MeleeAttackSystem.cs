@@ -73,6 +73,8 @@ namespace rts.systems {
                     meleeAttack.ValueRW.Timer = meleeAttack.ValueRO.TimerMax;
                     var health = SystemAPI.GetComponentRW<Health>(target.ValueRO.Value);
                     health.ValueRW.ApplyDamage(meleeAttack.ValueRO.Damage);
+                    
+                    meleeAttack.ValueRW.OnAttack = true;
                 }
             }
         }

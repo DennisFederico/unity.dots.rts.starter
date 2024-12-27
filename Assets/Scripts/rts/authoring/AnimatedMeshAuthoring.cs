@@ -9,7 +9,8 @@ namespace rts.authoring {
         [SerializeField] private AnimationDataSO.AnimationType idleAnimationType;
         [SerializeField] private AnimationDataSO.AnimationType walkAnimationType;
         [SerializeField] private AnimationDataSO.AnimationType aimAnimationType;
-        [SerializeField] private AnimationDataSO.AnimationType attackAnimationType;
+        [SerializeField] private AnimationDataSO.AnimationType shootAnimationType;
+        [SerializeField] private AnimationDataSO.AnimationType meleeAnimationType;
         
         private class AnimatedMeshAuthoringBaker : Baker<AnimatedMeshAuthoring> {
             public override void Bake(AnimatedMeshAuthoring authoring) {
@@ -21,7 +22,8 @@ namespace rts.authoring {
                     IdleAnimationType = authoring.idleAnimationType,
                     WalkAnimationType = authoring.walkAnimationType,
                     AimAnimationType = authoring.aimAnimationType,
-                    AttackAnimationType = authoring.attackAnimationType
+                    ShootAnimationType = authoring.shootAnimationType,
+                    MeleeAnimationType = authoring.meleeAnimationType
                 });
             }
         }
@@ -35,6 +37,8 @@ namespace rts.authoring {
         public AnimationDataSO.AnimationType IdleAnimationType;
         public AnimationDataSO.AnimationType WalkAnimationType;
         public AnimationDataSO.AnimationType AimAnimationType;
-        public AnimationDataSO.AnimationType AttackAnimationType;
+        public AnimationDataSO.AnimationType ShootAnimationType;
+        public AnimationDataSO.AnimationType MeleeAnimationType;
+        
     }
 }
