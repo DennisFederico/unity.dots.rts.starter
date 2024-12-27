@@ -20,6 +20,8 @@ namespace rts.authoring {
                     ProjectileOffset = authoring.projectileOrigin.localPosition,
                     Damage = authoring.damage
                 });
+                AddComponent<ShouldAttack>(entity);
+                SetComponentEnabled<ShouldAttack>(entity, false);
             }
         }
     }

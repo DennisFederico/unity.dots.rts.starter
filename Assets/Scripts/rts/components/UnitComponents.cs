@@ -10,6 +10,9 @@ namespace rts.components {
 
     public struct ShouldMove : IComponentData, IEnableableComponent {
     }
+
+    public struct ShouldAttack : IComponentData, IEnableableComponent {
+    }
     
     public struct MoveDestination : IComponentData {
         public float3 Value;

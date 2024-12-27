@@ -8,6 +8,8 @@ namespace rts.authoring {
         [SerializeField] private GameObject gameObjectMesh;
         [SerializeField] private AnimationDataSO.AnimationType idleAnimationType;
         [SerializeField] private AnimationDataSO.AnimationType walkAnimationType;
+        [SerializeField] private AnimationDataSO.AnimationType aimAnimationType;
+        [SerializeField] private AnimationDataSO.AnimationType attackAnimationType;
         
         private class AnimatedMeshAuthoringBaker : Baker<AnimatedMeshAuthoring> {
             public override void Bake(AnimatedMeshAuthoring authoring) {
@@ -17,7 +19,9 @@ namespace rts.authoring {
                 });
                 AddComponent(entity, new UnitAnimations() {
                     IdleAnimationType = authoring.idleAnimationType,
-                    WalkAnimationType = authoring.walkAnimationType
+                    WalkAnimationType = authoring.walkAnimationType,
+                    AimAnimationType = authoring.aimAnimationType,
+                    AttackAnimationType = authoring.attackAnimationType
                 });
             }
         }
@@ -30,5 +34,7 @@ namespace rts.authoring {
     public struct UnitAnimations : IComponentData {
         public AnimationDataSO.AnimationType IdleAnimationType;
         public AnimationDataSO.AnimationType WalkAnimationType;
+        public AnimationDataSO.AnimationType AimAnimationType;
+        public AnimationDataSO.AnimationType AttackAnimationType;
     }
 }

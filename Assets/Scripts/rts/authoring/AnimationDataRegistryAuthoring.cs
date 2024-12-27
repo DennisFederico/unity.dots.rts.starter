@@ -11,6 +11,8 @@ namespace rts.authoring {
 
         private class AnimationDataRegistryAuthoringBaker : Baker<AnimationDataRegistryAuthoring> {
             public override void Bake(AnimationDataRegistryAuthoring authoring) {
+                DependsOn(authoring.animationDataList);
+
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 var animationDataHolder = new AnimationDataHolder();
 

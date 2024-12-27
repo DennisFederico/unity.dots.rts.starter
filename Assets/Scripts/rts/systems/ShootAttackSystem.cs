@@ -23,9 +23,9 @@ namespace rts.systems {
 
             foreach (var (localTransform, attack, target, destination, targetOffset, entity) in 
                      SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<AttackTargetOffset>>()
-                         .WithPresent<ShouldMove>()
+                         .WithDisabled<ShouldMove>()
+                         .WithPresent<ShouldAttack>()
                          .WithEntityAccess()) {
-//              SystemAPI.Query <RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<ShouldMove>, RefRW<MoveDestination>, RefRO<MoveData>>()
                 //Are we moving?
                 if (state.EntityManager.IsComponentEnabled<ShouldMove>(entity)) continue;
 
@@ -34,21 +34,24 @@ namespace rts.systems {
                 if (attack.ValueRW.CooldownTimer > 0) continue;
 
                 //Have target?
-                if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) continue;
+                if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
+                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    continue;
+                }
                 
                 //Check distance
                 var localPosition = localTransform.ValueRO.Position;
                 var targetTransform = SystemAPI.GetComponentRO<LocalTransform>(target.ValueRO.Value);
                 var enemyPosition = targetTransform.ValueRO.Position;
                 var dirToEnemy = math.normalize(enemyPosition - localPosition);
-                // var distanceSquared = math.distancesq(localTransform.ValueRO.Position,  targetLocalTransform.Position);
-                float distanceSq = math.distancesq(localPosition,  enemyPosition);
+                var distanceSq = math.distancesq(localPosition,  enemyPosition);
                 if (distanceSq > attack.ValueRO.AttackDistanceSquared) {
                     //Target too far - get in range
                     var distanceVector = dirToEnemy * -1 * attack.ValueRO.AttackDistance * .9f;
                     destination.ValueRW.Value = enemyPosition + distanceVector;
-                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, true);
+                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
                 } else {
+                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
                     //In Range - Rotate to target and Spawn bullet
                     var lookRotation = quaternion.LookRotationSafe(dirToEnemy, math.up());
                     localTransform.ValueRW.Rotation = lookRotation; //TODO SLERP!?

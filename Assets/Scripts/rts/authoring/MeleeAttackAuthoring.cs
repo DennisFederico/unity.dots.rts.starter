@@ -22,6 +22,8 @@ namespace rts.authoring {
                     AttackDistanceSq = authoring.attackDistance * authoring.attackDistance,
                     Damage = authoring.damage
                 });
+                AddComponent<ShouldAttack>(entity);
+                SetComponentEnabled<ShouldAttack>(entity, false);
             }
         }
     }
