@@ -20,6 +20,7 @@ namespace rts.systems {
         public void OnUpdate(ref SystemState state) {
             
             activeAnimationLookup.Update(ref state);
+            
             new ActiveAnimationStateIdleJob() {
                 ActiveAnimationLookup = activeAnimationLookup
             }.ScheduleParallel();

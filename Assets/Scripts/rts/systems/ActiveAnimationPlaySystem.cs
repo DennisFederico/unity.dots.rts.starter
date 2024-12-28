@@ -3,7 +3,6 @@ using rts.scriptable;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Rendering;
-using IJobEntity = Unity.Entities.IJobEntity;
 
 namespace rts.systems {
     public partial struct ActiveAnimationPlaySystem : ISystem {
@@ -42,7 +41,7 @@ namespace rts.systems {
             if (!(activeAnimation.TimerCurrent >= valueTimerMax)) return;
             activeAnimation.TimerCurrent -= valueTimerMax;
             activeAnimation.FrameCurrent = (activeAnimation.FrameCurrent + 1) % valueFrameMax;
-            materialMeshInfo.MeshID = animationData.MeshIds[activeAnimation.FrameCurrent];
+            materialMeshInfo.Mesh = animationData.MeshIds[activeAnimation.FrameCurrent];
 
             if (activeAnimation is { FrameCurrent: 0, ActiveAnimationType: AnimationDataSO.AnimationType.ZombieMeleeAttack }) {
                 activeAnimation.ActiveAnimationType = AnimationDataSO.AnimationType.None;

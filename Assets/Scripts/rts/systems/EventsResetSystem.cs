@@ -1,17 +1,25 @@
 using rts.components;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace rts.systems {
     [UpdateInGroup(typeof(LateSimulationSystemGroup), OrderLast = true)]
     public partial struct EventsResetSystem : ISystem {
+
+        private NativeArray<JobHandle> jobHandles;
+        
         [BurstCompile]
-        public void OnCreate(ref SystemState state) { }
+        public void OnCreate(ref SystemState state) {
+            jobHandles = new NativeArray<JobHandle>(2, Allocator.Persistent);
+        }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            new ResetHealthChangeEventJob().ScheduleParallel();
-            new ResetMeleeAttackJob().ScheduleParallel();
+            jobHandles[0] = new ResetHealthChangeEventJob().ScheduleParallel(state.Dependency);
+            jobHandles[1] = new ResetMeleeAttackJob().ScheduleParallel(state.Dependency);
+            state.Dependency = JobHandle.CombineDependencies(jobHandles);
         }
 
         [BurstCompile]

@@ -38,7 +38,7 @@ namespace rts.systems {
 
             //TODO Why don't keep a reference of the animation data array in the ActiveAnimation component
             ref var animationData = ref AnimationDataArray.Value[(int)activeAnimation.ActiveAnimationType];
-            materialMeshInfo.MeshID = animationData.MeshIds[activeAnimation.FrameCurrent];
+            materialMeshInfo.Mesh = animationData.MeshIds[activeAnimation.FrameCurrent];
         }
     }
 }

@@ -13,7 +13,7 @@ namespace rts.scriptable {
                     return animationDataSO;
                 }
             }
-            Debug.LogError($"Could not find a AnimationDataSO with the AnimationType {animationType}");
+            Debug.Log($"Could not find a AnimationDataSO with the AnimationType {animationType}");
             return null;
         }
     }
