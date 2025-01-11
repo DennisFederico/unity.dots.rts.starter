@@ -10,8 +10,6 @@ namespace rts.systems {
     [UpdateInGroup(typeof(TargetingSystemGroup))]
     public partial struct FindTargetSystem : ISystem {
 
-        private int _tick;
-
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
             state.RequireForUpdate<PhysicsWorldSingleton>();

@@ -30,7 +30,7 @@ namespace rts.systems {
         
         private void Execute(ref ActiveAnimation activeAnimation, ref MaterialMeshInfo materialMeshInfo) {
             if (activeAnimation.ActiveAnimationType == activeAnimation.NextAnimationType) return;
-            if (activeAnimation.ActiveAnimationType == AnimationDataSO.AnimationType.ZombieMeleeAttack) return;
+            if (AnimationDataSO.IsAnimationUnInterruptible(activeAnimation.ActiveAnimationType)) return;
 
             activeAnimation.ActiveAnimationType = activeAnimation.NextAnimationType;
             activeAnimation.FrameCurrent = 0;

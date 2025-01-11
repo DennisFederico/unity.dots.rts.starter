@@ -4,10 +4,10 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+
 // ReSharper disable PossiblyImpureMethodCallOnReadonlyVariable
 
 namespace rts.systems {
-    
     [UpdateAfter(typeof(TargetingSystemGroup))]
     public partial struct ShootAttackSystem : ISystem {
         [BurstCompile]
@@ -21,7 +21,7 @@ namespace rts.systems {
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             var entityReferences = SystemAPI.GetSingleton<EntityReferences>();
 
-            foreach (var (localTransform, attack, target, destination, targetOffset, entity) in 
+            foreach (var (localTransform, attack, target, destination, targetOffset, entity) in
                      SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<AttackTargetOffset>>()
                          .WithDisabled<ShouldMove>()
                          .WithPresent<ShouldAttack>()
@@ -38,19 +38,20 @@ namespace rts.systems {
                     state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
                     continue;
                 }
-                
+
                 //Check distance
                 var localPosition = localTransform.ValueRO.Position;
                 var targetTransform = SystemAPI.GetComponentRO<LocalTransform>(target.ValueRO.Value);
                 var enemyPosition = targetTransform.ValueRO.Position;
                 var dirToEnemy = math.normalize(enemyPosition - localPosition);
-                var distanceSq = math.distancesq(localPosition,  enemyPosition);
+                var distanceSq = math.distancesq(localPosition, enemyPosition);
                 if (distanceSq > attack.ValueRO.AttackDistanceSquared) {
                     //Target too far - get in range
                     var distanceVector = dirToEnemy * -1 * attack.ValueRO.AttackDistance * .9f;
                     destination.ValueRW.Value = enemyPosition + distanceVector;
                     state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
-                } else {
+                }
+                else {
                     state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
                     //In Range - Rotate to target and Spawn bullet
                     var lookRotation = quaternion.LookRotationSafe(dirToEnemy, math.up());
@@ -71,15 +72,16 @@ namespace rts.systems {
                         Speed = 100f,
                         Damage = attack.ValueRO.Damage
                     });
-                    
+
                     var muzzleFlash = ecb.Instantiate(entityReferences.ShootLightPrefab);
                     ecb.SetComponent(muzzleFlash, LocalTransform.FromPositionRotation(shootOrigin, bulletRotation));
-                    
+
                     //Restart Cooldown
                     attack.ValueRW.CooldownTimer = attack.ValueRW.Cooldown;
                 }
-                
+
                 //Make target aware - TODO this should be onHit, not onShoot
+                if (!SystemAPI.HasComponent<TargetOverride>(target.ValueRO.Value)) continue;
                 var enemyTarget = SystemAPI.GetComponentRW<TargetOverride>(target.ValueRO.Value);
                 if (enemyTarget.ValueRO.Value != Entity.Null && SystemAPI.HasComponent<LocalTransform>(enemyTarget.ValueRO.Value)) continue;
                 enemyTarget.ValueRW.Value = entity;
@@ -88,8 +90,6 @@ namespace rts.systems {
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state) {
-
-        }
+        public void OnDestroy(ref SystemState state) { }
     }
 }

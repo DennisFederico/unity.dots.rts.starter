@@ -18,7 +18,6 @@ namespace rts.systems {
             state.RequireForUpdate<AnimationDataRegistrySourceSO>();
         }
 
-        [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             
             var animationDataListSO = SystemAPI.GetSingleton<AnimationDataRegistrySourceSO>().AnimationDataList.Value;

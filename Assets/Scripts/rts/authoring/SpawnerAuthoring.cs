@@ -9,15 +9,16 @@ namespace rts.authoring {
         
         [SerializeField] private GameObject prefab;
         [SerializeField] private float spawnRate;
+        [SerializeField] private int maxNearbySpawnCount;
         [SerializeField] private Vector2 size;
 
         private void OnDrawGizmos() {
             Gizmos.color = Color.green;
 
-            Vector3 topLeft = new Vector3(-size.x, 0, size.y) + transform.position;
-            Vector3 topRight = new Vector3(size.x, 0, size.y)+ transform.position;
-            Vector3 bottomLeft = new Vector3(-size.x, 0, -size.y)+ transform.position;
-            Vector3 bottomRight = new Vector3(size.x, 0, -size.y)+ transform.position;
+            var topLeft = new Vector3(-size.x, 0, size.y) + transform.position;
+            var topRight = new Vector3(size.x, 0, size.y)+ transform.position;
+            var bottomLeft = new Vector3(-size.x, 0, -size.y)+ transform.position;
+            var bottomRight = new Vector3(size.x, 0, -size.y)+ transform.position;
 
             Handles.DrawLine(topLeft, topRight);
             Handles.DrawLine(topRight, bottomRight);
@@ -35,6 +36,8 @@ namespace rts.authoring {
                     Prefab = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic),
                     SpawnRate = authoring.spawnRate,
                     SpawnTimer = authoring.spawnRate,
+                    MaxSpawnDistance = authoring.size.magnitude,
+                    MaxNearbySpawnCount = authoring.maxNearbySpawnCount,
                     Random = new Random((uint) UnityEngine.Random.Range(1, 100000))
                 });
             }
@@ -46,6 +49,8 @@ namespace rts.authoring {
             public Entity Prefab;
             public float SpawnRate;
             public float SpawnTimer;
+            public int MaxNearbySpawnCount;
+            public float MaxSpawnDistance;
             public Random Random;
         }
     }
