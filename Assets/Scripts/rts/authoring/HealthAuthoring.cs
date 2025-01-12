@@ -12,7 +12,8 @@ namespace rts.authoring {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new Health {
                     Value = authoring.healthAmount,
-                    MaxValue = authoring.healthAmount
+                    MaxValue = authoring.healthAmount,
+                    HasChanged = true
                 });
             }
         }
