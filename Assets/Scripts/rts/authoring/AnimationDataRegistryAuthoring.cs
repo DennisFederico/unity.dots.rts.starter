@@ -2,7 +2,6 @@ using rts.scriptable;
 using Unity.Entities;
 using Unity.Rendering;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace rts.authoring {
     public class AnimationDataRegistryAuthoring : MonoBehaviour {
