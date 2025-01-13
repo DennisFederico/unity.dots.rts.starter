@@ -13,7 +13,7 @@ namespace rts.scriptable {
                     return buildingTypeSO;
                 }
             }
-            Debug.Log($"Could not find a BuildingTypeSO with the AnimationType {buildingType}");
+            Debug.Log($"Could not find a BuildingTypeSO with the BuildingType {buildingType}");
             return null;
         }
     }

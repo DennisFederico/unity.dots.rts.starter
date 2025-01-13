@@ -1,4 +1,5 @@
 using System;
+using rts.authoring;
 using rts.components;
 using Unity.Collections;
 using Unity.Entities;
@@ -40,10 +41,11 @@ namespace rts.mono {
                 // Vector2 selectionEnd = Input.mousePosition;
 
                 var selectedUnits = new EntityQueryBuilder(Allocator.Temp)
-                    .WithAll<UnitTag, Selected>()
+                    .WithAll<Selected>()
+                    // .WithAll<UnitTag, Selected>()
                     .Build(entityManager);
-                foreach (var selectedUnit in selectedUnits.ToEntityArray(Allocator.Temp)) {
-                    entityManager.SetComponentEnabled<Selected>(selectedUnit, false);
+                foreach (var selected in selectedUnits.ToEntityArray(Allocator.Temp)) {
+                    entityManager.SetComponentEnabled<Selected>(selected, false);
                 }
 
                 //HANDLE SELECTION TYPE (SINGLE OR MULTIPLE)
@@ -56,8 +58,7 @@ namespace rts.mono {
                         .WithAll<UnitTag, LocalTransform>()
                         .WithPresent<Selected>()
                         .Build(entityManager);
-
-
+                    
                     var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                     var positions = entityQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
                     for (var i = 0; i < positions.Length; i++) {
@@ -74,11 +75,12 @@ namespace rts.mono {
                         End = screenPointRay.GetPoint(1000f),
                         Filter = new CollisionFilter {
                             BelongsTo = ~0u,
-                            CollidesWith = GameConstants.Selectable,
+                            // CollidesWith = GameConstants.Selectable,
+                            CollidesWith = (uint) 1 << GameConstants.SoldiersLayer,
                             GroupIndex = 0
                         }
                     };
-                    if (pws.CastRay(rayCastInput, out var closestHit) && entityManager.HasComponent<UnitTag>(closestHit.Entity)) {
+                    if (pws.CastRay(rayCastInput, out var closestHit) && entityManager.HasComponent<Selected>(closestHit.Entity)) {
                         entityManager.SetComponentEnabled<Selected>(closestHit.Entity, true);
                     }
                 }
@@ -123,6 +125,7 @@ namespace rts.mono {
                 } else {
                     //Try to move...
                     var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                    
                     //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<MoveData, MoveDestination, Selected>().WithPresent<ShouldMove, TargetOverride>()
@@ -139,6 +142,21 @@ namespace rts.mono {
                     entityQuery.CopyFromComponentDataArray(destinationArray);
                     entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
                     entityQuery.CopyFromComponentDataArray(targetOverrides);
+                    
+                    //Rally points
+                    var buildingsQuery = new EntityQueryBuilder(Allocator.Temp)
+                        .WithAll<Selected, BuildingTag, BuildingBarracksState, LocalTransform>()
+                        .Build(entityManager);
+
+                    var stateArray = buildingsQuery.ToComponentDataArray<BuildingBarracksState>(Allocator.Temp);
+                    var positionsArray = buildingsQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
+                    
+                    for (var i = 0; i < stateArray.Length; i++) {
+                        var buildingBarracksState = stateArray[i];
+                        buildingBarracksState.RallyPositionOffset = (float3)targetPosition - positionsArray[i].Position;
+                        stateArray[i] = buildingBarracksState;
+                    }
+                    buildingsQuery.CopyFromComponentDataArray(stateArray);
                 }
             }
         }

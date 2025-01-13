@@ -22,6 +22,10 @@ namespace rts.components {
         
     }
     
+    public struct BuildingTag : IComponentData {
+        
+    }
+    
     public struct EnemyTag : IComponentData {
         
     }

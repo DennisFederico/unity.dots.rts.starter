@@ -3,19 +3,15 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace rts.authoring {
-    public class BuildingTypeAuthoring : MonoBehaviour {
-        
+    public class BuildingTypeSOAuthoring : MonoBehaviour {
         [SerializeField] private BuildingTypeSO.BuildingType buildingType;
-        private class BuildingTypeAuthoringBaker : Baker<BuildingTypeAuthoring> {
 
-            public override void Bake(BuildingTypeAuthoring authoring) {
-
+        private class BuildingTypeAuthoringBaker : Baker<BuildingTypeSOAuthoring> {
+            public override void Bake(BuildingTypeSOAuthoring authoring) {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
-                
                 AddComponent(entity, new BuildingType {
                     Value = authoring.buildingType
                 });
-
             }
         }
     }

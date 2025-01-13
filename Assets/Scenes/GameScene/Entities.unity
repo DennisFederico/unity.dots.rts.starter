@@ -232,6 +232,8 @@ GameObject:
   - component: {fileID: 194465308}
   - component: {fileID: 194465314}
   - component: {fileID: 194465315}
+  - component: {fileID: 194465316}
+  - component: {fileID: 194465317}
   m_Layer: 7
   m_Name: BarracksBuilding
   m_TagString: Untagged
@@ -320,13 +322,14 @@ Transform:
   m_GameObject: {fileID: 194465307}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.66, y: 0, z: 16.9}
+  m_LocalPosition: {x: 15.55, y: 0, z: -6.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1894588466}
   - {fileID: 859233014}
   - {fileID: 895110446}
+  - {fileID: 480161386}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &194465314
@@ -352,6 +355,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8e2a59adccc4324b3279eb1c2057a62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &194465316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194465307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a670c99999d8434993a1b20b417df666, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSelected: 0
+  showScale: 10
+  visualGameObject: {fileID: 480161383}
+--- !u!114 &194465317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194465307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 163c55277ffd4a07ac57b09f994a42ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &269936113
@@ -460,6 +490,7 @@ GameObject:
   - component: {fileID: 465927178}
   - component: {fileID: 465927177}
   - component: {fileID: 465927180}
+  - component: {fileID: 465927181}
   m_Layer: 7
   m_Name: DefenseTowerBuilding
   m_TagString: Untagged
@@ -616,6 +647,104 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingType: 2
+--- !u!114 &465927181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465927170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 163c55277ffd4a07ac57b09f994a42ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &480161383
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 480161386}
+  - component: {fileID: 480161385}
+  - component: {fileID: 480161384}
+  m_Layer: 0
+  m_Name: SelectedVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!23 &480161384
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480161383}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: f6e7377d0823ae44cad080aacb59b941, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &480161385
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480161383}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &480161386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480161383}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.01, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 194465313}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &572191200
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,6 +761,7 @@ GameObject:
   - component: {fileID: 572191206}
   - component: {fileID: 572191208}
   - component: {fileID: 572191207}
+  - component: {fileID: 572191209}
   m_Layer: 8
   m_Name: ZombieSpawner
   m_TagString: Untagged
@@ -758,6 +888,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildingType: 1
+--- !u!114 &572191209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 572191200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 163c55277ffd4a07ac57b09f994a42ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &582757748
 GameObject:
   m_ObjectHideFlags: 0
@@ -944,7 +1086,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 895110446}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: HealthBarContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1837,6 +1979,14 @@ PrefabInstance:
       propertyPath: belongsTo
       value: 
       objectReference: {fileID: 194465307}
+    - target: {fileID: 2985579474050504897, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4170334713911272805, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4368315641317997930, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
       propertyPath: m_LocalScale.x
       value: 2.5
@@ -1892,6 +2042,14 @@ PrefabInstance:
     - target: {fileID: 5258613991354328393, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
       propertyPath: m_Name
       value: HealthBar
+      objectReference: {fileID: 0}
+    - target: {fileID: 5258613991354328393, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6328288271967728172, guid: 9fc3db888d80042409b7a9405ba8328a, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2072,6 +2230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 4934663814339280965, guid: e9f0465c1487848578e2a0ef4591c269, type: 3}
+  scoutPrefab: {fileID: 1894780771668063676, guid: 262bb48f74c7244c2b47a56cf84b431b, type: 3}
   soldierPrefab: {fileID: 1894780771668063676, guid: 29775ba6bc47c47728eeef9616d7e2c6, type: 3}
   zombiePrefab: {fileID: 3853373825762702151, guid: 00bab57836f4c4208baa06f2194d417e, type: 3}
   shootLightPrefab: {fileID: 361556036517989939, guid: c256eab3b909c46a99efd0c233d9df7c, type: 3}
@@ -2099,6 +2258,7 @@ SceneRoots:
   - {fileID: 1406367374}
   - {fileID: 572191202}
   - {fileID: 465927176}
+  - {fileID: 194465313}
   - {fileID: 1274942910}
   - {fileID: 744317584}
   - {fileID: 950338320}
@@ -2111,4 +2271,3 @@ SceneRoots:
   - {fileID: 825205586}
   - {fileID: 1467183099}
   - {fileID: 1150582695}
-  - {fileID: 194465313}

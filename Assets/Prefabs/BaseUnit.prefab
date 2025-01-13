@@ -19,6 +19,8 @@ GameObject:
   - component: {fileID: 556852126540890989}
   - component: {fileID: 5444917516024906383}
   - component: {fileID: 2812957988049381793}
+  - component: {fileID: 1354295869443618720}
+  - component: {fileID: 6838003652845818570}
   m_Layer: 6
   m_Name: BaseUnit
   m_TagString: Untagged
@@ -206,6 +208,31 @@ MonoBehaviour:
   aimAnimationType: 0
   shootAnimationType: 0
   meleeAnimationType: 0
+--- !u!114 &1354295869443618720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41747748104769207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 458ec2a3b2c1457b8f91a480d04e596d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitType: 0
+--- !u!114 &6838003652845818570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41747748104769207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af334313f22a45458a097605ece37be4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6172206643172859336
 GameObject:
   m_ObjectHideFlags: 0

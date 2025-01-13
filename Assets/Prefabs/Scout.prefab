@@ -153,6 +153,10 @@ PrefabInstance:
       propertyPath: nextAnimationType
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1354295869443618720, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
+      propertyPath: unitType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2812957988049381793, guid: 212e2e939081e4fe688f9766fb8efc8c, type: 3}
       propertyPath: aimAnimationType
       value: 10

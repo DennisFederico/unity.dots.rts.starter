@@ -1,4 +1,5 @@
 using rts.authoring;
+using rts.mono;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -23,7 +24,7 @@ namespace rts.systems {
             //EnemyCollision - Zombie = 8
             var collisionFilter = new CollisionFilter {
                 BelongsTo = ~0u,
-                CollidesWith = (uint) 1 << 8,
+                CollidesWith = (uint) 1 << GameConstants.ZombiesLayer,
                 GroupIndex = 0
             };
             
