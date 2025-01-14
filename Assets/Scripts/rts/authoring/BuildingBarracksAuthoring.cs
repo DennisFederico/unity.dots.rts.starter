@@ -13,15 +13,9 @@ namespace rts.authoring {
                     ActiveUnitType = UnitTypeSO.UnitType.None,
                     RallyPositionOffset = new float3(0, 0, 5)
                 });
-                var buffer = AddBuffer<BarrackSpawnBuffer>(entity);
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Scout });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Scout });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Scout });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Soldier });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Soldier });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Scout });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Zombie });
-                buffer.Add(new BarrackSpawnBuffer() { Value = UnitTypeSO.UnitType.Scout });
+                AddBuffer<BarrackSpawnBuffer>(entity);
+                AddComponent<BuildingBarracksUnitEnqueue>(entity);
+                SetComponentEnabled<BuildingBarracksUnitEnqueue>(entity, false);
             }
         }
     }
@@ -31,10 +25,15 @@ namespace rts.authoring {
         public float ProgressRequired;
         public UnitTypeSO.UnitType ActiveUnitType;
         public float3 RallyPositionOffset;
+        public bool HasQueueChanged;
     }
 
     [InternalBufferCapacity(10)]
     public struct BarrackSpawnBuffer : IBufferElementData {
         public UnitTypeSO.UnitType Value;
+    }
+    
+    public struct BuildingBarracksUnitEnqueue : IComponentData, IEnableableComponent {
+        public UnitTypeSO.UnitType UnitType;
     }
 }

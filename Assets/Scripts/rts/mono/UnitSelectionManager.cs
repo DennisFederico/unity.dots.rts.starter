@@ -15,6 +15,8 @@ namespace rts.mono {
 
         public event EventHandler OnSelectionStart;
         public event EventHandler OnSelectionEnd;
+        public event EventHandler OnSelectedEntitiesChanged;
+        
 
         private EntityManager entityManager;
         private Vector2 selectionStartPosition;
@@ -30,6 +32,9 @@ namespace rts.mono {
         }
 
         private void Update() {
+            //Skip Input if mouse is over UI
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+
             //Left-click Hold
             if (Input.GetMouseButtonDown(0)) {
                 selectionStartPosition = Input.mousePosition;
@@ -86,6 +91,7 @@ namespace rts.mono {
                 }
 
                 OnSelectionEnd?.Invoke(this, EventArgs.Empty);
+                OnSelectedEntitiesChanged?.Invoke(this, EventArgs.Empty);
             }
 
             //Right-click

@@ -1,4 +1,6 @@
+using rts.authoring;
 using rts.components;
+using rts.mono;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -15,11 +17,21 @@ namespace rts.systems {
             jobHandles = new NativeArray<JobHandle>(2, Allocator.Persistent);
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state) {
             jobHandles[0] = new ResetHealthChangeEventJob().ScheduleParallel(state.Dependency);
             jobHandles[1] = new ResetMeleeAttackJob().ScheduleParallel(state.Dependency);
+            
+            var barracksThatChangedQueue = new NativeList<Entity>(Allocator.TempJob);
+            new ResetBuildingBarracksQueueChangedJob() {
+                BarracksEntitiesThatChangedList = barracksThatChangedQueue.AsParallelWriter()
+            }.ScheduleParallel(state.Dependency).Complete();
+            
             state.Dependency = JobHandle.CombineDependencies(jobHandles);
+            
+            if (barracksThatChangedQueue.Length > 0) {
+                DOTSEventManager.Instance.TriggerOnBarracksQueueChanged(barracksThatChangedQueue);
+            }
         }
 
         [BurstCompile]
@@ -28,15 +40,28 @@ namespace rts.systems {
 
     [BurstCompile]
     public partial struct ResetHealthChangeEventJob : IJobEntity {
-        public void Execute(ref Health health) {
+        private void Execute(ref Health health) {
             health.HasChanged = false;
         }
     }
     
     [BurstCompile]
     public partial struct ResetMeleeAttackJob : IJobEntity {
-        public void Execute(ref MeleeAttack meleeAttack) {
+        private void Execute(ref MeleeAttack meleeAttack) {
             meleeAttack.OnAttack = false;
+        }
+    }
+    
+    [BurstCompile]
+    public partial struct ResetBuildingBarracksQueueChangedJob : IJobEntity {
+        
+        public NativeList<Entity>.ParallelWriter BarracksEntitiesThatChangedList;
+
+        private void Execute(ref BuildingBarracksState barrackState, Entity barrackEntity) {
+            if (barrackState.HasQueueChanged) {
+                BarracksEntitiesThatChangedList.AddNoResize(barrackEntity);
+            }
+            barrackState.HasQueueChanged = false;
         }
     }
 }

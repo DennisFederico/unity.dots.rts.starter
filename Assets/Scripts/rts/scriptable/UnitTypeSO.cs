@@ -13,5 +13,6 @@ namespace rts.scriptable {
         
         public UnitType unitType;
         public float buildTimeMax;
+        public Sprite sprite;
     }
 }

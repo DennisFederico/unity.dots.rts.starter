@@ -12,6 +12,7 @@
 /[Mm]emoryCaptures/
 /[Uu]serSettings/
 /Assets/SceneDependencyCache*
+/Assets/SceneDependencyCache.meta
 /Assets/NetCodeGenerated*
 /Assets/[Tt]hird[Pp]arty/
 
