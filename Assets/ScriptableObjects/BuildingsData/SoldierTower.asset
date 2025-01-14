@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: SoldierTower
   m_EditorClassIdentifier: 
   buildingType: 2
+  prefab: {fileID: 5633813263673115079, guid: cb288cc21ba024acbb75e50bbcbd000b, type: 3}

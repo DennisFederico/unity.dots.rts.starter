@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: SoldierBarracks
   m_EditorClassIdentifier: 
   buildingType: 3
+  prefab: {fileID: 1595753346522284610, guid: 596a5172eddc640acaf68b0d0c2d50a8, type: 3}

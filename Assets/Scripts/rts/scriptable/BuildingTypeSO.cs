@@ -11,5 +11,6 @@ namespace rts.scriptable {
         }
         
         public BuildingType buildingType;
+        public Transform prefab; //User for building placement
     }
 }

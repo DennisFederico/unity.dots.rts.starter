@@ -10,6 +10,9 @@ namespace rts.authoring {
         [SerializeField] private GameObject soldierPrefab;
         [SerializeField] private GameObject zombiePrefab;
         [SerializeField] private GameObject shootLightPrefab;
+        [SerializeField] private GameObject towerBuildingPrefab;
+        [SerializeField] private GameObject barracksBuildingPrefab;
+        [SerializeField] private GameObject zombieSpawnerPrefab;
         
         private class EntityReferencesAuthoringBaker : Baker<EntityReferencesAuthoring> {
             public override void Bake(EntityReferencesAuthoring authoring) {
@@ -20,6 +23,9 @@ namespace rts.authoring {
                     ScoutPrefab = GetEntity(authoring.scoutPrefab, TransformUsageFlags.Dynamic),
                     SoldierPrefab = GetEntity(authoring.soldierPrefab, TransformUsageFlags.Dynamic),
                     ZombiePrefab = GetEntity(authoring.zombiePrefab, TransformUsageFlags.Dynamic),
+                    BuildingTowerPrefab = GetEntity(authoring.towerBuildingPrefab, TransformUsageFlags.Dynamic),
+                    BuildingBarracksPrefab = GetEntity(authoring.barracksBuildingPrefab, TransformUsageFlags.Dynamic),
+                    ZombieSpawnerPrefab = GetEntity(authoring.zombieSpawnerPrefab, TransformUsageFlags.Dynamic),
                 });
             }
         }
@@ -31,8 +37,11 @@ namespace rts.authoring {
         public Entity ScoutPrefab;
         public Entity SoldierPrefab;
         public Entity ZombiePrefab;
+        public Entity BuildingTowerPrefab;
+        public Entity BuildingBarracksPrefab;
+        public Entity ZombieSpawnerPrefab;
         
-        public Entity GetPrefabForType(UnitTypeSO.UnitType unitType) {
+        public Entity GetPrefabUnitForType(UnitTypeSO.UnitType unitType) {
             switch (unitType) {
                 case UnitTypeSO.UnitType.Scout:
                     return ScoutPrefab;

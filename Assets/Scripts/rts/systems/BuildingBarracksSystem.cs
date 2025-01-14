@@ -49,7 +49,7 @@ namespace rts.systems {
                 spawnBuffer.RemoveAt(0);
                 buildingState.ValueRW.HasQueueChanged = true;
                 
-                var prefabForType = entityReferences.GetPrefabForType(buildingState.ValueRO.ActiveUnitType);
+                var prefabForType = entityReferences.GetPrefabUnitForType(buildingState.ValueRO.ActiveUnitType);
                 var spawn = ecb.Instantiate(prefabForType);
                 ecb.SetComponent(spawn, LocalTransform.FromPosition(localTransform.ValueRO.Position));
                 ecb.SetComponent(spawn, new MoveDestination { Value = localTransform.ValueRO.Position + buildingState.ValueRO.RallyPositionOffset });

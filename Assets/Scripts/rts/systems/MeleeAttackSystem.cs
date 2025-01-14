@@ -47,7 +47,8 @@ namespace rts.systems {
                     if (collisionWorld.CastRay(touchRay, out var closestHit)) {
                         //Double check for the same target?
                         if (closestHit.Entity != target.ValueRO.Value) {
-                            Debug.Log($"TARGET ASSERT WARNING, Expecting {target.ValueRO.Value}, Found {closestHit.Entity}");
+                            //Debug.Log($"TARGET ASSERT WARNING, Expecting {target.ValueRO.Value}, Found {closestHit.Entity}");
+                            continue;
                         }
                         touching = true;
                     }
