@@ -4,7 +4,6 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace rts.systems {
     public partial struct MeleeAttackSystem : ISystem {
@@ -15,27 +14,28 @@ namespace rts.systems {
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
-            foreach (var (localTransform, meleeAttack, target, moveDestination, targetingData, entity) in
+            foreach (var (localTransform, meleeAttack, target, moveDestination, targetingData, shouldMove) in
                      SystemAPI
-                         .Query<RefRW<LocalTransform>, RefRW<MeleeAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<TargetingData>>()
-                         .WithPresent<ShouldMove>()
-                         .WithEntityAccess()) {
+                         .Query<RefRW<LocalTransform>, RefRW<MeleeAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<TargetingData>, EnabledRefRW<ShouldMove>>()
+                         .WithPresent<ShouldMove>()) {
                 if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
                     continue;
                 }
 
                 //Check if close enough
                 var targetLocalTransform = SystemAPI.GetComponentRO<LocalTransform>(target.ValueRO.Value);
-                var distanceSq = math.distancesq(localTransform.ValueRO.Position, targetLocalTransform.ValueRO.Position);
+                var targetPositionWithOffset = targetLocalTransform.ValueRO.Position + target.ValueRO.AttackOffset;
+                var localPositionWithOffset = localTransform.ValueRO.Position + target.ValueRO.AttackOffset;
+                var distanceSq = math.distancesq(localPositionWithOffset, targetPositionWithOffset);
                 var closeToTarget = distanceSq <= meleeAttack.ValueRO.AttackDistanceSq;
                 
                 //Far from target center but on touching distance?
                 bool touching = false;
                 if (!closeToTarget) {
-                    var dirToTarget = math.normalize(targetLocalTransform.ValueRO.Position - localTransform.ValueRO.Position);
+                    var dirToTarget = math.normalize(targetLocalTransform.ValueRO.Position - localPositionWithOffset);
                     var touchRay = new RaycastInput() {
-                        Start = localTransform.ValueRO.Position,
-                        End = localTransform.ValueRO.Position + dirToTarget * meleeAttack.ValueRO.TouchDistance,
+                        Start = localPositionWithOffset,
+                        End = localPositionWithOffset + (dirToTarget * meleeAttack.ValueRO.TouchDistance),
                         Filter = new CollisionFilter {
                             BelongsTo = ~0u,
                             CollidesWith = (uint)targetingData.ValueRO.TargetLayers.value,
@@ -56,13 +56,13 @@ namespace rts.systems {
 
                 if (!touching && !closeToTarget) {
                     //Target too far
-                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, true);
-                    // shouldMove.ValueRW.Value = true;
+                    // state.EntityManager.SetComponentEnabled<ShouldMove>(entity, true);
+                    shouldMove.ValueRW = true;
                     moveDestination.ValueRW.Value = targetLocalTransform.ValueRO.Position;
                 } else {
                     //Target close
-                    state.EntityManager.SetComponentEnabled<ShouldMove>(entity, false);
-                    // shouldMove.ValueRW.Value = false;
+                    // state.EntityManager.SetComponentEnabled<ShouldMove>(entity, false);
+                    shouldMove.ValueRW = false;
                     moveDestination.ValueRW.Value = localTransform.ValueRO.Position;
                     meleeAttack.ValueRW.Timer -= SystemAPI.Time.DeltaTime;
 

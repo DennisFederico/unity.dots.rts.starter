@@ -89,10 +89,14 @@ namespace rts.components {
         public int Value;
         public int MaxValue;
         public bool HasChanged;
+        public bool OnDead;
 
         public void ApplyDamage(int damage) {
             Value -= damage;
             HasChanged = true;
         }
+    }
+    
+    public struct TargetSoldiersHQOnSpawn : IComponentData {
     }
 }

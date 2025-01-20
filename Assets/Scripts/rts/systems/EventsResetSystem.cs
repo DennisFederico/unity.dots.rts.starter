@@ -14,11 +14,20 @@ namespace rts.systems {
         
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
+            state.RequireForUpdate<SoldiersHQ>(); //Once the HQ is destroyed, the game is over
             jobHandles = new NativeArray<JobHandle>(2, Allocator.Persistent);
         }
 
         //[BurstCompile]
         public void OnUpdate(ref SystemState state) {
+            //Check if SoldierHQ has been destroyed - TODO move to a separate system
+            if (SystemAPI.HasSingleton<SoldiersHQ>()) {
+                var hqHealth = SystemAPI.GetComponent<Health>(SystemAPI.GetSingletonEntity<SoldiersHQ>());
+                if (hqHealth.OnDead) {
+                    DOTSEventManager.Instance.TriggerOnSoldiersHQDestroyed();
+                }
+            }
+            
             jobHandles[0] = new ResetHealthChangeEventJob().ScheduleParallel(state.Dependency);
             jobHandles[1] = new ResetMeleeAttackJob().ScheduleParallel(state.Dependency);
             
@@ -42,6 +51,7 @@ namespace rts.systems {
     public partial struct ResetHealthChangeEventJob : IJobEntity {
         private void Execute(ref Health health) {
             health.HasChanged = false;
+            health.OnDead = false;
         }
     }
     

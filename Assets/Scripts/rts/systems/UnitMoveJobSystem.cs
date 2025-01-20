@@ -12,23 +12,23 @@ namespace rts.systems {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     public partial struct UnitMoveJobSystem : ISystem {
 
-        private ComponentLookup<ShouldMove> _shouldMoveComponentLookup;
+        private ComponentLookup<ShouldMove> shouldMoveComponentLookup;
         
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            _shouldMoveComponentLookup = SystemAPI.GetComponentLookup<ShouldMove>();
+            shouldMoveComponentLookup = SystemAPI.GetComponentLookup<ShouldMove>();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
-            _shouldMoveComponentLookup.Update(ref state);
+            shouldMoveComponentLookup.Update(ref state);
             state.Dependency = new UnitMoveJob {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 Ecb = ecb.AsParallelWriter(),
-                StoppingDistance = 0.1f,
-                ShouldMoveLookup = _shouldMoveComponentLookup
+                StoppingDistance = 0.5f,
+                ShouldMoveLookup = shouldMoveComponentLookup
             }.ScheduleParallel(state.Dependency);
         }
 

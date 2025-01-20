@@ -1,4 +1,5 @@
 using rts.authoring;
+using rts.components;
 using rts.mono;
 using Unity.Burst;
 using Unity.Collections;
@@ -37,7 +38,6 @@ namespace rts.systems {
                 hitList.Clear();
                 if (collisionWorld.OverlapSphere(spawnerPosition.ValueRO.Position, spawnerData.ValueRO.MaxSpawnDistance, ref hitList, collisionFilter) &&
                     hitList.Length >= spawnerData.ValueRO.MaxNearbySpawnCount) {
-                    
                     continue;
                 }
                 
@@ -45,6 +45,9 @@ namespace rts.systems {
                 var spawnPosition = spawnerData.ValueRO.Position + new float3(random.x, 0, random.y);
                 var spawn = ecb.Instantiate(spawnerData.ValueRO.Prefab);
                 ecb.SetComponent(spawn, LocalTransform.FromPosition(spawnPosition));
+                ecb.SetComponent(spawn, new MoveDestination {Value = spawnPosition});
+                ecb.SetComponentEnabled<ShouldMove>(spawn, false);
+                //TODO Set a RandomWalk Component/System to make the spawned entity walk around
             }
         }
 

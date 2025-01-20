@@ -18,7 +18,7 @@ namespace rts.systems {
         [BurstCompile]
         public void OnUpdate(ref SystemState state) {
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-            var defaultOffset =  new float3(0,0,1.5f);
+            var defaultOffset =  new float3(0,1.5f,0f);
             
             foreach (var (targetingData, 
                          localTransform, 

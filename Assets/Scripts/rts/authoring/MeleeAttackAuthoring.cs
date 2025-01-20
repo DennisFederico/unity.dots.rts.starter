@@ -18,7 +18,7 @@ namespace rts.authoring {
                 AddComponent(entity, new MeleeAttack {
                     Timer = authoring.timerMax, 
                     TimerMax = authoring.timerMax,
-                    TouchDistance = collider.bounds.size.x + .1f,
+                    TouchDistance = collider.bounds.size.x + .5f,
                     AttackDistanceSq = authoring.attackDistance * authoring.attackDistance,
                     Damage = authoring.damage
                 });

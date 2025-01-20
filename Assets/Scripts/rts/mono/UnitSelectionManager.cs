@@ -116,7 +116,7 @@ namespace rts.mono {
                 //Is it a enemy?
                 if (pws.CastRay(rayCastInput, out var hit)) {
                     var offset = entityManager.HasComponent<AttackTargetOffset>(hit.Entity) ?
-                        entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value : new float3(0, 0, 1.5f);
+                        entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value : new float3(0, 1.5f, 0f);
 
                     //Check Faction or any other attribute on the selected target?
                     var selectedWithTargetOverride = new EntityQueryBuilder(Allocator.Temp)

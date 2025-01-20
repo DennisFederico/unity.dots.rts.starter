@@ -9,6 +9,7 @@ namespace rts.mono {
         public static DOTSEventManager Instance { get; private set; }
         
         public event EventHandler OnBarracksQueueChanged;
+        public event EventHandler OnSoldiersHQDestroyed;
         
         private void Awake() {
             if (Instance != null && Instance != this) {
@@ -23,6 +24,10 @@ namespace rts.mono {
             foreach(Entity entity in barracksEntitiesThatChangedList) {
                 OnBarracksQueueChanged?.Invoke(entity, EventArgs.Empty);    
             }
+        }
+        
+        public void TriggerOnSoldiersHQDestroyed() {
+            OnSoldiersHQDestroyed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

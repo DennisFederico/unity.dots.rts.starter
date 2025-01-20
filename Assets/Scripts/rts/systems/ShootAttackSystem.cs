@@ -22,21 +22,19 @@ namespace rts.systems {
             var entityReferences = SystemAPI.GetSingleton<EntityReferences>();
 
             //Attackers that con move
-            foreach (var (localTransform, attack, target, destination, targetOffset, entity) in
-                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<AttackTargetOffset>>()
+            foreach (var (localTransform, attack, target, destination, targetOffset, shouldAttack, entity) in
+                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRW<MoveDestination>, RefRO<AttackTargetOffset>, EnabledRefRW<ShouldAttack>>()
                          .WithDisabled<ShouldMove>()
                          .WithPresent<ShouldAttack>()
                          .WithEntityAccess()) {
-                //Are we moving?
-                if (state.EntityManager.IsComponentEnabled<ShouldMove>(entity)) continue;
-
                 //On Cool-Down
                 attack.ValueRW.CooldownTimer -= SystemAPI.Time.DeltaTime;
                 if (attack.ValueRW.CooldownTimer > 0) continue;
 
                 //Have target?
                 if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
-                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    // state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    shouldAttack.ValueRW = false;
                     continue;
                 }
 
@@ -50,10 +48,12 @@ namespace rts.systems {
                     //Target too far - get in range
                     var distanceVector = dirToEnemy * -1 * attack.ValueRO.AttackDistance * .9f;
                     destination.ValueRW.Value = enemyPosition + distanceVector;
-                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    // state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    shouldAttack.ValueRW = false;
                 }
                 else {
-                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
+                    // state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
+                    shouldAttack.ValueRW = true;
                     //In Range - Rotate to target and Spawn bullet
                     var lookRotation = quaternion.LookRotationSafe(dirToEnemy, math.up());
                     localTransform.ValueRW.Rotation = lookRotation; //TODO SLERP!?
@@ -90,8 +90,8 @@ namespace rts.systems {
             }
 
             //static attackers
-            foreach (var (localTransform, attack, target, targetOffset, entity) in
-                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRO<AttackTargetOffset>>()
+            foreach (var (localTransform, attack, target, targetOffset, shouldAttack, entity) in
+                     SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootAttack>, RefRO<Target>, RefRO<AttackTargetOffset>, EnabledRefRW<ShouldAttack>>()
                          .WithNone<MoveDestination>()
                          .WithPresent<ShouldAttack>()
                          .WithEntityAccess()) {
@@ -101,7 +101,8 @@ namespace rts.systems {
 
                 //Have target?
                 if (target.ValueRO.Value == Entity.Null || !SystemAPI.HasComponent<LocalTransform>(target.ValueRO.Value)) {
-                    state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    // state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, false);
+                    shouldAttack.ValueRW = false;
                     continue;
                 }
 
@@ -111,7 +112,8 @@ namespace rts.systems {
                 var enemyPosition = targetTransform.ValueRO.Position;
                 var distanceSq = math.distancesq(localPosition, enemyPosition);
                 if (distanceSq > attack.ValueRO.AttackDistanceSquared) continue;
-                state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
+                // state.EntityManager.SetComponentEnabled<ShouldAttack>(entity, true);
+                shouldAttack.ValueRW = true;
                 
                 //Shoot
                 var bulletEntity = ecb.Instantiate(entityReferences.BulletPrefab);
