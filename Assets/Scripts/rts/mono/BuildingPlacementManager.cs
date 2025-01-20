@@ -8,6 +8,7 @@ using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using BoxCollider = UnityEngine.BoxCollider;
+using Material = UnityEngine.Material;
 
 namespace rts.mono {
     public class BuildingPlacementManager : MonoBehaviour {
@@ -17,6 +18,9 @@ namespace rts.mono {
         public event EventHandler OnActiveBuildingTypeSOChanged;
         
         [SerializeField] private BuildingTypeSO activeBuildingSO;
+        [SerializeField] private Material ghostMaterial;
+        
+        private Transform activeBuildingGhost;
         
         private EntityManager entityManager;
         private EntityReferences entityReferences;
@@ -25,6 +29,16 @@ namespace rts.mono {
             get => activeBuildingSO;
             set {
                 activeBuildingSO = value;
+                //TODO Move the spawn ghost to a method and split the property into methods??
+                if (activeBuildingGhost != null) {
+                    Destroy(activeBuildingGhost.gameObject);
+                }
+                if (!value.IsNone) {
+                    activeBuildingGhost = Instantiate(value.buildingGhost);
+                    foreach (var meshRenderer in activeBuildingGhost.GetComponentsInChildren<MeshRenderer>()) {
+                        meshRenderer.material = ghostMaterial;
+                    }
+                }
                 OnActiveBuildingTypeSOChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -40,6 +54,14 @@ namespace rts.mono {
         }
 
         private void Update() {
+            
+            //Update Building ghost position
+            if (activeBuildingGhost != null) {
+                var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                activeBuildingGhost.position = targetPosition;
+                //TODO Here we can switch the ghost color to red if the building can't be placed
+                //activeBuildingGhost.gameObject.SetActive(CanPlaceBuilding(targetPosition, activeBuildingGhost.GetComponent<BoxCollider>()));
+            }
 
             if (EventSystem.current.IsPointerOverGameObject()) return;
             if (ActiveBuildingSO.IsNone) return;

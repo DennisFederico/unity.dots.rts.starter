@@ -292,6 +292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeBuildingSO: {fileID: 11400000, guid: 446389b1a5f802e49944648a92649ecf, type: 2}
+  ghostMaterial: {fileID: 2100000, guid: 2a7ec2724b8ac4e4b9c1d090f52daec2, type: 2}
 --- !u!1 &226761172
 GameObject:
   m_ObjectHideFlags: 0
@@ -2352,8 +2353,8 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1123106839}
-  - {fileID: 1988061175}
   - {fileID: 109675904}
+  - {fileID: 1988061175}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

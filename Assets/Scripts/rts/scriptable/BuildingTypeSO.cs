@@ -12,6 +12,7 @@ namespace rts.scriptable {
         
         public BuildingType buildingType;
         public Transform prefab; //User for building placement
+        public Transform buildingGhost;
         public Sprite sprite; //Used for UI
         public bool showInBuildUI;
         

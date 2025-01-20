@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingType: 2
   prefab: {fileID: 5633813263673115079, guid: cb288cc21ba024acbb75e50bbcbd000b, type: 3}
+  buildingGhost: {fileID: 797814922017616551, guid: 4dbe3453c2a716743b0db56f6ced9c3b, type: 3}
   sprite: {fileID: 21300000, guid: 251009f30697ae940904ab5c27e31833, type: 3}
   showInBuildUI: 1
