@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace rts.scriptable {
     [CreateAssetMenu]
     public class BuildingTypeListSO : ScriptableObject {
         public List<BuildingTypeSO> buildingTypeSOList;
-        
+        public BuildingTypeSO none;
         
         public BuildingTypeSO GetBuildingTypeSO(BuildingTypeSO.BuildingType buildingType) {
             foreach (var buildingTypeSO in buildingTypeSOList) {

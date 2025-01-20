@@ -5,6 +5,7 @@ namespace rts.scriptable {
     [CreateAssetMenu]
     public class UnitTypeListSO : ScriptableObject {
         public List<UnitTypeSO> unitTypeSOList;
+        public UnitTypeSO None;
         
         public UnitTypeSO GetUnitTypeSO(UnitTypeSO.UnitType unitType) {
             foreach (var unitTypeSO in unitTypeSOList) {

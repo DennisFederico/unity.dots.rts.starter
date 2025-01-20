@@ -53,5 +53,16 @@ namespace rts.authoring {
                     return Entity.Null;
             }
         }
+        
+        public Entity GetPrefabBuildingForType(BuildingTypeSO.BuildingType buildingType) {
+            switch (buildingType) {
+                case BuildingTypeSO.BuildingType.SoldierBarracks:
+                    return BuildingBarracksPrefab;
+                case BuildingTypeSO.BuildingType.SoldierTower:
+                    return BuildingTowerPrefab;
+                default:
+                    return Entity.Null;
+            }
+        }
     }
 }

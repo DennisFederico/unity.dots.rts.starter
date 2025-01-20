@@ -34,6 +34,9 @@ namespace rts.mono {
         private void Update() {
             //Skip Input if mouse is over UI
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
+            
+            //TODO - CHANGE THIS, IT SUX TO CHECK IF THERES AN ACTIVE SELECTION FOR BUILDING BUILDINGS
+            if (!BuildingPlacementManager.Instance.ActiveBuildingSO.IsNone) return;
 
             //Left-click Hold
             if (Input.GetMouseButtonDown(0)) {

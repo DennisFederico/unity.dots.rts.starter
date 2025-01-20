@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using rts.authoring;
 using rts.scriptable;
 using Unity.Collections;
@@ -13,10 +12,26 @@ using BoxCollider = UnityEngine.BoxCollider;
 namespace rts.mono {
     public class BuildingPlacementManager : MonoBehaviour {
 
+        public static BuildingPlacementManager Instance { get; private set; }
+        
+        public event EventHandler OnActiveBuildingTypeSOChanged;
+        
         [SerializeField] private BuildingTypeSO activeBuildingSO;
-
+        
         private EntityManager entityManager;
         private EntityReferences entityReferences;
+
+        public BuildingTypeSO ActiveBuildingSO {
+            get => activeBuildingSO;
+            set {
+                activeBuildingSO = value;
+                OnActiveBuildingTypeSOChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private void Awake() {
+            Instance = this;
+        }
 
         private void Start() {
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
@@ -25,14 +40,20 @@ namespace rts.mono {
         }
 
         private void Update() {
+
+            if (EventSystem.current.IsPointerOverGameObject()) return;
+            if (ActiveBuildingSO.IsNone) return;
+            
+            if (Input.GetMouseButtonUp(1)) {
+                ActiveBuildingSO = GameConstants.Instance.BuildingTypeListSO.none;
+            }
+
             if (Input.GetMouseButtonUp(0)) {
-                if (EventSystem.current.IsPointerOverGameObject()) return;
-                
                 var targetPosition = MouseWorldPosition.Instance.GetPosition();
-                var boxCollider = activeBuildingSO.prefab.GetComponent<BoxCollider>();
+                var boxCollider = ActiveBuildingSO.prefab.GetComponent<BoxCollider>();
 
                 if (CanPlaceBuilding(targetPosition, boxCollider)) {
-                    var entity = entityManager.Instantiate(entityReferences.BuildingTowerPrefab);
+                    var entity = entityManager.Instantiate(entityReferences.GetPrefabBuildingForType(activeBuildingSO.buildingType));
                     entityManager.SetComponentData(entity, LocalTransform.FromPosition(targetPosition));    
                 }
             }

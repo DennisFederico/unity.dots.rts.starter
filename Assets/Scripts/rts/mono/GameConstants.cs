@@ -10,8 +10,10 @@ namespace rts.mono {
         public const uint Zombie = 1 << UnitsLayer | 1 << ZombiesLayer;
 
         [SerializeField] private UnitTypeListSO unitTypeListSO;
+        [SerializeField] private BuildingTypeListSO buildingTypeListSO;
         
         public UnitTypeListSO UnitTypeListSO => Instance.unitTypeListSO;
+        public BuildingTypeListSO BuildingTypeListSO => Instance.buildingTypeListSO;
         
         public static GameConstants Instance { get; private set; }
 
