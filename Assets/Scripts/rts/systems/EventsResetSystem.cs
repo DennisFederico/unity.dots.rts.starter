@@ -41,10 +41,14 @@ namespace rts.systems {
             if (barracksThatChangedQueue.Length > 0) {
                 DOTSEventManager.Instance.TriggerOnBarracksQueueChanged(barracksThatChangedQueue);
             }
+            
+            barracksThatChangedQueue.Dispose(); //TempJob allocators don't dispose automatically
         }
 
         [BurstCompile]
-        public void OnDestroy(ref SystemState state) { }
+        public void OnDestroy(ref SystemState state) {
+            jobHandles.Dispose();
+        }
     }
 
     [BurstCompile]

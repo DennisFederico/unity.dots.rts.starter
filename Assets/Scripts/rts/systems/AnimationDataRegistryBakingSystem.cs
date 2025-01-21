@@ -61,5 +61,13 @@ namespace rts.systems {
             animationDataHolder.ValueRW.AnimationDataArray = blobBuilder.CreateBlobAssetReference<BlobArray<AnimationData>>(Allocator.Persistent);
             blobBuilder.Dispose();
         }
+
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state) {
+            var animationDataHolder = SystemAPI.GetSingletonRW<AnimationDataHolder>();
+            if (animationDataHolder.ValueRW.AnimationDataArray.IsCreated) {
+                animationDataHolder.ValueRW.AnimationDataArray.Dispose();
+            }
+        }
     }
 }
