@@ -118,8 +118,8 @@ namespace rts.systems {
                 if (gridSystemData.IsWithinBounds(gridPosition)) {
                     var gridNodes = InitializeGrid(ref state, gridSystemData, gridPosition);
                     //TODO MAKE FLOWFIELD2 USE ARRAY OF INT2 LIKE FLOWFIELD, DONT STORE THAT MANY COPIES OF COMPONENTS
-                    // GenerateFlowField(gridSystemData, gridPosition, gridNodes);
-                    GenerateFlowField2(gridSystemData, gridPosition, gridNodes);
+                    GenerateFlowField(gridSystemData, gridPosition, gridNodes);
+                    //GenerateFlowField2(gridSystemData, gridPosition, gridNodes);
                     gridNodes.Dispose();
                 }
 #if GRID_DEBUG
@@ -154,16 +154,14 @@ namespace rts.systems {
             return gridNodes;
         }
 
-        private void GenerateFlowField2(GridSystemData gridSystemData, int2 startingGridPosition, NativeArray<RefRW<GridNode>> gridNodes) {
-            //Open list
-            var openQueue = new NativeQueue<RefRW<GridNode>>(Allocator.Temp);
-            //Enqueue the starting node
-            openQueue.Enqueue(gridNodes[GridSystemData.GetIndex(startingGridPosition, gridSystemData.XSize)]);
+        [BurstCompile]
+        private void GenerateFlowField(GridSystemData gridSystemData, int2 startingGridPosition, NativeArray<RefRW<GridNode>> gridNodes) {
+            var openQueue = new NativeQueue<int2>(Allocator.Temp);
+            openQueue.Enqueue(startingGridPosition);
 
             int safeLimit = (int)(gridSystemData.XSize * gridSystemData.YSize * 1.1f);
             int iterations = 0;
 
-            //While there are nodes in the open list
             while (openQueue.Count > 0) {
                 iterations++;
                 if (iterations > safeLimit) {
@@ -171,52 +169,11 @@ namespace rts.systems {
                     break;
                 }
 
-                //Dequeue the current node
-                var currentGridNode = openQueue.Dequeue();
-                //Visit the neighbours
-                for (int y = -1; y <= 1; y++) {
-                    for (int x = -1; x <= 1; x++) {
-                        if (x == 0 && y == 0) continue; //Skip the current node
-                        var neighbourGridPosition = currentGridNode.ValueRO.GridPosition + new int2(x, y);
-                        if (!gridSystemData.IsWithinBounds(neighbourGridPosition)) continue; //Skip if out of bounds
-                        var neighbourGridIndex = GridSystemData.GetIndex(neighbourGridPosition, gridSystemData.XSize);
-                        var neighbourGridNode = gridNodes[neighbourGridIndex];
-
-                        //Calculate the new cost
-                        var newCost = (byte)(currentGridNode.ValueRO.BestCosts + neighbourGridNode.ValueRO.Cost);
-                        if (newCost < neighbourGridNode.ValueRO.BestCosts) {
-                            neighbourGridNode.ValueRW.BestCosts = newCost;
-                            neighbourGridNode.ValueRW.Vector = currentGridNode.ValueRO.GridPosition - neighbourGridPosition;
-                            openQueue.Enqueue(neighbourGridNode);
-                        }
-                    }
-                }
-            }
-
-            openQueue.Dispose();
-        }
-
-        [BurstCompile]
-        private void GenerateFlowField(GridSystemData gridSystemData, int2 startingGridPosition, NativeArray<RefRW<GridNode>> gridNodes) {
-            var openList = new NativeList<int2>(Allocator.Temp);
-            openList.Add(startingGridPosition);
-
-            int safeLimit = (int)(gridSystemData.XSize * gridSystemData.YSize * 1.1f);
-            int iterations = 0;
-
-            while (openList.Length > 0) {
-                iterations++;
-                if (iterations > safeLimit) {
-                    Debug.LogError("Safe limit reached");
-                    break;
-                }
-
-                var currentGridPosition = openList[0];
-                openList.RemoveAtSwapBack(0);
-                // var currentGridIndex = GridSystemData.GetIndex(currentGridPosition, gridSystemData.XSize);
-                // var currentGridNode = SystemAPI.GetComponentRW<GridNode>(gridSystemData.GridMap.GridNodes[currentGridIndex]);
+                //Dequeue position
+                var currentGridPosition = openQueue.Dequeue();
                 var currentGridNode = gridNodes[GridSystemData.GetIndex(currentGridPosition, gridSystemData.XSize)];
 
+                //Visit the neighbours
                 for (int y = -1; y <= 1; y++) {
                     for (int x = -1; x <= 1; x++) {
                         if (x == 0 && y == 0) continue;
@@ -224,20 +181,18 @@ namespace rts.systems {
                         if (!gridSystemData.IsWithinBounds(neighbourGridPosition)) continue;
 
                         var neighbourGridIndex = GridSystemData.GetIndex(neighbourGridPosition, gridSystemData.XSize);
-                        // var neighbourGridNode = SystemAPI.GetComponentRW<GridNode>(gridSystemData.GridMap.GridNodes[neighbourGridIndex]);
                         var neighbourGridNode = gridNodes[neighbourGridIndex];
-
                         var newCost = (byte)(currentGridNode.ValueRO.BestCosts + neighbourGridNode.ValueRO.Cost);
                         if (newCost < neighbourGridNode.ValueRO.BestCosts) {
                             neighbourGridNode.ValueRW.BestCosts = newCost;
                             neighbourGridNode.ValueRW.Vector = currentGridPosition - neighbourGridPosition;
-                            openList.Add(neighbourGridPosition);
+                            openQueue.Enqueue(neighbourGridPosition);
                         }
                     }
                 }
             }
 
-            openList.Dispose();
+            openQueue.Dispose();
         }
 
         [BurstCompile]
