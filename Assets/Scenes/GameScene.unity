@@ -2068,6 +2068,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridNodePrefab: {fileID: 6598969668682189869, guid: 006f441f69b6c48958b13fac73f0776e, type: 3}
+  circleSprite: {fileID: 21300000, guid: a0e35f6b808bb7447826cc6c69ffe448, type: 3}
+  arrowSprite: {fileID: 21300000, guid: 0aac3aa6f7b72684cad566015dc5f233, type: 3}
 --- !u!1 &1443658849
 GameObject:
   m_ObjectHideFlags: 0

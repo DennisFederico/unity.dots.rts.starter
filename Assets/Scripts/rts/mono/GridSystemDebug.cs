@@ -9,6 +9,8 @@ namespace rts.mono {
         public static GridSystemDebug Instance;
         
         [SerializeField] private Transform gridNodePrefab;
+        [SerializeField] Sprite circleSprite;
+        [SerializeField] Sprite arrowSprite;
         
         private EntityManager entityManager;
         private GridSystemDebugCell[,] gridSystemDebugCells;
@@ -48,7 +50,21 @@ namespace rts.mono {
                 for (int x = 0; x < gridSystemData.XSize; x++) {
                     var gridMapGridNode = gridSystemData.GridMap.GridNodes[GridSystemData.GetIndex(x, y, gridSystemData.XSize)];
                     var gridNode = entityManager.GetComponentData<GridNode>(gridMapGridNode);
-                    // gridSystemDebugCells[x, y].SetColor(gridNode.Data == 0 ? Color.white : Color.red);                   
+                    var gridSystemDebugCell = gridSystemDebugCells[x, y];
+                    if (gridNode.Cost == 0) {
+                        //TargetNode
+                        gridSystemDebugCell.SetSprite(circleSprite);
+                        gridSystemDebugCell.SetColor(Color.green);
+                    } else if (gridNode.Cost == byte.MaxValue) {
+                        //ObstacleNode
+                        gridSystemDebugCell.SetSprite(circleSprite);
+                        gridSystemDebugCell.SetColor(Color.red);
+                    } else {
+                        //NormalNode
+                        gridSystemDebugCell.SetSprite(arrowSprite);
+                        gridSystemDebugCell.SetSpriteRotation(Quaternion.LookRotation(new Vector3(gridNode.Vector.x, 0, gridNode.Vector.y), Vector3.up));
+                        gridSystemDebugCell.SetColor(Color.white);
+                    }            
                 }
             }
         }
