@@ -10,6 +10,7 @@ namespace rts.mono {
         
         [SerializeField] private Transform gridNodePrefab;
         [SerializeField] Sprite circleSprite;
+        [SerializeField] Sprite obstacleSprite;
         [SerializeField] Sprite arrowSprite;
         
         private EntityManager entityManager;
@@ -55,10 +56,11 @@ namespace rts.mono {
                         //TargetNode
                         gridSystemDebugCell.SetSprite(circleSprite);
                         gridSystemDebugCell.SetColor(Color.green);
-                    } else if (gridNode.Cost == byte.MaxValue) {
+                    } else if (gridNode.Cost == WALL_COST) {
                         //ObstacleNode
-                        gridSystemDebugCell.SetSprite(circleSprite);
+                        gridSystemDebugCell.SetSprite(obstacleSprite);
                         gridSystemDebugCell.SetColor(Color.red);
+                        gridSystemDebugCell.SetSpriteRotation(Quaternion.identity);
                     } else {
                         //NormalNode
                         gridSystemDebugCell.SetSprite(arrowSprite);

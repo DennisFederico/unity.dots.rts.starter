@@ -4,10 +4,14 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
 using UnityEngine;
 
 namespace rts.systems {
     public partial struct GridSystem : ISystem {
+
+        public const byte WALL_COST = byte.MaxValue;
+        
         public struct GridSystemData : IComponentData {
             public int XSize;
             public int YSize;
@@ -22,10 +26,6 @@ namespace rts.systems {
                 return gridPosition.x + gridPosition.y * xSize;
             }
 
-            // public static int GetGridIndex(float3 worldPosition, int xSize, float cellSize) {
-            //     return GetGridIndex(GetGridPosition(worldPosition, cellSize), xSize);
-            // }
-
             public static int2 GetGridPosition(int index, int xSize) {
                 return new int2(index % xSize, index / xSize);
             }
@@ -37,11 +37,21 @@ namespace rts.systems {
             }
 
             public static float3 GetWorldPosition(int2 gridPosition, float cellSize) {
-                return new float3(gridPosition.x * cellSize, 0.01f, gridPosition.y * cellSize);
+                return new float3(gridPosition.x * cellSize, 0f, gridPosition.y * cellSize);
             }
-
-            public static float3 GetWorldPosition(int index, int xSize, float cellSize) {
-                return GetWorldPosition(GetGridPosition(index, xSize), cellSize);
+            
+            public static float3 GetWorldCenterPosition(int xPos, int yPos, float cellSize) {
+                return new float3(
+                    xPos * cellSize + cellSize * .5f,
+                    0f, 
+                    yPos * cellSize + cellSize * .5f);
+            }
+            
+            public static float3 GetWorldCenterPosition(int2 gridPosition, float cellSize) {
+                return new float3(
+                    gridPosition.x * cellSize + cellSize * .5f,
+                    0f, 
+                    gridPosition.y * cellSize + cellSize * .5f);
             }
 
             public bool IsWithinBounds(int x, int y) {
@@ -69,6 +79,7 @@ namespace rts.systems {
 
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
+            state.RequireForUpdate<PhysicsWorldSingleton>();
             int xSize = 20;
             int ySize = 10;
             int totalSize = xSize * ySize;
@@ -114,12 +125,11 @@ namespace rts.systems {
             if (Input.GetMouseButtonDown(0)) {
                 var position = MouseWorldPosition.Instance.GetPosition();
                 var gridSystemData = SystemAPI.GetComponent<GridSystemData>(state.SystemHandle);
-                var gridPosition = GridSystemData.GetGridPosition(position, gridSystemData.CellSize);
-                if (gridSystemData.IsWithinBounds(gridPosition)) {
-                    var gridNodes = InitializeGrid(ref state, gridSystemData, gridPosition);
-                    //TODO MAKE FLOWFIELD2 USE ARRAY OF INT2 LIKE FLOWFIELD, DONT STORE THAT MANY COPIES OF COMPONENTS
-                    GenerateFlowField(gridSystemData, gridPosition, gridNodes);
-                    //GenerateFlowField2(gridSystemData, gridPosition, gridNodes);
+                var targetPosition = GridSystemData.GetGridPosition(position, gridSystemData.CellSize);
+                if (gridSystemData.IsWithinBounds(targetPosition)) {
+                    var gridNodes = InitializeGrid(ref state, gridSystemData, targetPosition);
+                    PlaceGridObstacles(ref state, gridSystemData, gridNodes);
+                    GenerateFlowField(gridSystemData, targetPosition, gridNodes);
                     gridNodes.Dispose();
                 }
 #if GRID_DEBUG
@@ -142,7 +152,7 @@ namespace rts.systems {
                     }
                     else {
                         gridNode.ValueRW.Cost = 1;
-                        gridNode.ValueRW.BestCosts = byte.MaxValue;
+                        gridNode.ValueRW.BestCosts = WALL_COST;
                     }
 
                     //If stuck, it will eventually move to a valid node
@@ -152,6 +162,34 @@ namespace rts.systems {
             }
 
             return gridNodes;
+        }
+        
+        private void PlaceGridObstacles(ref SystemState state, GridSystemData gridSystemData, NativeArray<RefRW<GridNode>> gridNodes) {
+            //Take the entities colliders and mark the grid nodes the span as obstacles
+            var pws = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
+            var collisionWorld = pws.CollisionWorld;
+            
+            var collisionFilter = new CollisionFilter() {
+                BelongsTo = ~0u,
+                CollidesWith = GameConstants.StaticObstacles,
+                // CollidesWith = 1u << 10 | 1u << 9,
+                GroupIndex = 0
+            };
+            
+            //TODO Confirm which method is faster, a full AABB collider overlap for the size of the grid or going through the grid nodes and using a sphere/box collider for each one
+            //Method 1. Iterating through the grid nodes using sphere collider
+            NativeList<DistanceHit> distanceHits = new NativeList<DistanceHit>(Allocator.Temp);
+            for (var y = 0; y < gridSystemData.YSize; y++) {
+                for (var x = 0; x < gridSystemData.XSize; x++) {
+                    var worldPosition = GridSystemData.GetWorldCenterPosition(x, y, gridSystemData.CellSize);
+                    if (collisionWorld.OverlapSphere(worldPosition, gridSystemData.CellSize * .5f, ref distanceHits, collisionFilter)) {
+                        var index = GridSystemData.GetIndex(x, y, gridSystemData.XSize);
+                        gridNodes[index].ValueRW.Cost = WALL_COST;
+                    }
+                }
+            }
+            distanceHits.Clear();
+            
         }
 
         [BurstCompile]
@@ -179,9 +217,12 @@ namespace rts.systems {
                         if (x == 0 && y == 0) continue;
                         var neighbourGridPosition = currentGridPosition + new int2(x, y);
                         if (!gridSystemData.IsWithinBounds(neighbourGridPosition)) continue;
-
+                        
                         var neighbourGridIndex = GridSystemData.GetIndex(neighbourGridPosition, gridSystemData.XSize);
                         var neighbourGridNode = gridNodes[neighbourGridIndex];
+                        
+                        if (neighbourGridNode.ValueRO.Cost == WALL_COST) continue;
+                        
                         var newCost = (byte)(currentGridNode.ValueRO.BestCosts + neighbourGridNode.ValueRO.Cost);
                         if (newCost < neighbourGridNode.ValueRO.BestCosts) {
                             neighbourGridNode.ValueRW.BestCosts = newCost;
@@ -191,7 +232,6 @@ namespace rts.systems {
                     }
                 }
             }
-
             openQueue.Dispose();
         }
 
@@ -203,4 +243,27 @@ namespace rts.systems {
             gridSystemData.GridMap.GridNodes.Dispose();
         }
     }
+    
+    
+    /*
+     *                     var aabb = new Aabb() {
+           Min = worldPosition - new float3(gridSystemData.CellSize * .5f),
+           Max = worldPosition + new float3(gridSystemData.CellSize * .5f)
+       };
+       var filter = new CollisionFilter() {
+           BelongsTo = 1,
+           CollidesWith = (uint) 1 << 10,
+           GroupIndex = 0
+       };
+       var input = new OverlapAabbInput() {
+           Aabb = aabb,
+           Filter = filter
+       };
+       collisionWorld.OverlapAabb(input, ref distanceHits);
+       if (distanceHits.Length > 0) {
+           gridNode.ValueRW.Cost = WALL_COST;
+           gridNodes[index] = gridNode;
+       }
+       distanceHits.Clear();
+     */
 }
