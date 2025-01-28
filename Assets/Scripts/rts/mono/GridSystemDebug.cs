@@ -56,7 +56,7 @@ namespace rts.mono {
                         //TargetNode
                         gridSystemDebugCell.SetSprite(circleSprite);
                         gridSystemDebugCell.SetColor(Color.green);
-                    } else if (gridNode.Cost == WALL_COST) {
+                    } else if (gridNode.Cost == GridSystemData.WALL_COST) {
                         //ObstacleNode
                         gridSystemDebugCell.SetSprite(obstacleSprite);
                         gridSystemDebugCell.SetColor(Color.red);
