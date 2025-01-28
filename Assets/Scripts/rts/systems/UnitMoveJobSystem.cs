@@ -45,12 +45,12 @@ namespace rts.systems {
                     follower.ValueRW.LastFlowFieldVector = flowVector;
                 }
 
-                if (math.distance(localTransform.ValueRO.Position, follower.ValueRO.TargetPosition) < gridSystemData.CellSize *.5f) {
+                if (math.distance(localTransform.ValueRO.Position, follower.ValueRO.TargetPosition) < gridSystemData.CellSize) {
                     enabledFollower.ValueRW = false;
                     destination.ValueRW.Value = localTransform.ValueRO.Position;
                 } else {
                     var nodeWorldCenter = GridSystem.GridSystemData.GetWorldCenterPosition(gridPosition, gridSystemData.CellSize);
-                    destination.ValueRW.Value = nodeWorldCenter + (flowVector * gridSystemData.CellSize * 2f);    
+                    destination.ValueRW.Value = nodeWorldCenter + (flowVector * gridSystemData.CellSize * 1.5f);    
                 }
             }
 

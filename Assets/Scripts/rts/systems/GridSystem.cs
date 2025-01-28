@@ -131,26 +131,30 @@ namespace rts.systems {
         [BurstCompile]
 #endif
         public void OnUpdate(ref SystemState state) {
-            if (Input.GetMouseButtonDown(0)) {
-                var position = MouseWorldPosition.Instance.GetPosition();
-                var gridSystemData = SystemAPI.GetComponent<GridSystemData>(state.SystemHandle);
-                var targetPosition = GridSystemData.GetGridPosition(position, gridSystemData.CellSize);
+
+            var gridSystemData = SystemAPI.GetComponent<GridSystemData>(state.SystemHandle);
+
+            foreach (var (request,
+                         enableRequest,
+                         follower,
+                         enableFollower) in
+                     SystemAPI.Query<
+                         RefRW<FlowFieldPathRequest>,
+                         EnabledRefRW<FlowFieldPathRequest>,
+                         RefRW<FlowFieldFollower>,
+                         EnabledRefRW<FlowFieldFollower>
+                     >().WithPresent<FlowFieldFollower>()) {
+                var targetPosition = GridSystemData.GetGridPosition(request.ValueRO.TargetPosition, gridSystemData.CellSize);
                 if (gridSystemData.IsWithinBounds(targetPosition)) {
+                    enableRequest.ValueRW = false;
+                    enableFollower.ValueRW = true;
+                    follower.ValueRW.TargetPosition = request.ValueRO.TargetPosition;
                     var gridNodes = InitializeGrid(ref state, gridSystemData, targetPosition);
+                    //TODO KEEP A COPY OF INITIAL GRID NODES TO RESET THE GRID WHEN NEEDED...
                     PlaceGridObstacles(ref state, gridSystemData, gridNodes);
                     GenerateFlowField(gridSystemData, targetPosition, gridNodes);
                     gridNodes.Dispose();
                 }
-
-                foreach (var (flowFieldFollower, enableFlowFieldFollower) in 
-                         SystemAPI.Query<
-                             RefRW<FlowFieldFollower>, 
-                             EnabledRefRW<FlowFieldFollower>
-                         >().WithPresent<FlowFieldFollower>()) {
-                    enableFlowFieldFollower.ValueRW = true;
-                    flowFieldFollower.ValueRW.TargetPosition = position;
-                }
-
 #if GRID_DEBUG
                 GridSystemDebug.Instance.UpdateGridDebug(gridSystemData);
 #endif
@@ -175,7 +179,7 @@ namespace rts.systems {
                     }
 
                     //If stuck, it will eventually move to a valid node
-                    gridNode.ValueRW.Vector = new int2(0, 1);
+                    gridNode.ValueRW.Vector = new int2(0, 0);
                     gridNodes[index] = gridNode;
                 }
             }
@@ -208,7 +212,7 @@ namespace rts.systems {
                 }
             }
 
-            distanceHits.Clear();
+            distanceHits.Dispose();
         }
 
         //This defines the orders on which cells are evaluated.

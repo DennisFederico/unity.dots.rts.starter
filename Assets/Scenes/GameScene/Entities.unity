@@ -605,10 +605,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Scout
       objectReference: {fileID: 0}
-    - target: {fileID: 3379106436049657085, guid: 262bb48f74c7244c2b47a56cf84b431b, type: 3}
-      propertyPath: healthAmount
-      value: 60
-      objectReference: {fileID: 0}
     - target: {fileID: 4744644874246550288, guid: 262bb48f74c7244c2b47a56cf84b431b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 40.4
@@ -648,10 +644,6 @@ PrefabInstance:
     - target: {fileID: 4744644874246550288, guid: 262bb48f74c7244c2b47a56cf84b431b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8199854971440034370, guid: 262bb48f74c7244c2b47a56cf84b431b, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

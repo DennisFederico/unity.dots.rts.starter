@@ -137,20 +137,27 @@ namespace rts.mono {
                     
                     //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
-                        .WithAll<MoveData, MoveDestination, Selected>().WithPresent<ShouldMove, TargetOverride>()
+                        .WithAll<MoveData, MoveDestination, Selected>()
+                        .WithPresent<ShouldMove, TargetOverride, FlowFieldPathRequest>()
                         .Build(entityManager);
 
+                    var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                     var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
                     var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
                     var targetOverrides = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+                    var flowFieldPathRequests = entityQuery.ToComponentDataArray<FlowFieldPathRequest>(Allocator.Temp);
 
                     for (var i = 0; i < destinationArray.Length; i++) {
                         destinationArray[i] = new MoveDestination { Value = targetPositions[i] };
                         targetOverrides[i] = new TargetOverride() { Value = Entity.Null };
+                        entityManager.SetComponentEnabled<ShouldMove>(entityArray[i], true);
+                        flowFieldPathRequests[i] = new FlowFieldPathRequest() { TargetPosition = targetPositions[i] };
+                        entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], true);
                     }
                     entityQuery.CopyFromComponentDataArray(destinationArray);
-                    entityManager.SetComponentEnabled<ShouldMove>(entityQuery, true);
                     entityQuery.CopyFromComponentDataArray(targetOverrides);
+                    entityQuery.CopyFromComponentDataArray(flowFieldPathRequests);
+                    
                     
                     //Rally points
                     var buildingsQuery = new EntityQueryBuilder(Allocator.Temp)
