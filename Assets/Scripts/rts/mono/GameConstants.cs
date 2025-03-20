@@ -3,14 +3,16 @@ using UnityEngine;
 
 namespace rts.mono {
     public class GameConstants : MonoBehaviour {
-        public const int UnitsLayer = 6;
-        public const int SoldiersLayer = 7;
-        public const int ZombiesLayer = 8;
-        public const int BuildingsLayer = 9;
-        public const int ObstaclesLayer = 10;
-        public const uint Selectable = 1u << UnitsLayer | 1u << SoldiersLayer;
-        public const uint StaticObstacles = 1u << BuildingsLayer | 1u << ObstaclesLayer;
-        public const uint Zombie = 1u << UnitsLayer | 1u << ZombiesLayer;
+        public const int UNITS_LAYER = 6;
+        public const int SOLDIERS_LAYER = 7;
+        public const int ZOMBIES_LAYER = 8;
+        public const int BUILDINGS_LAYER = 9;
+        public const int OBSTACLES_LAYER = 10;
+        public const int PATHFINDING_HEAVY_LAYER = 11;
+        public const uint SELECTABLE = 1u << UNITS_LAYER | 1u << SOLDIERS_LAYER;
+        public const uint PATHFINDING_OBSTACLES = 1u << OBSTACLES_LAYER;
+        public const uint PATHFINDING_HEAVY = 1u << PATHFINDING_HEAVY_LAYER;
+        public const uint ZOMBIE = 1u << UNITS_LAYER | 1u << ZOMBIES_LAYER;
 
         [SerializeField] private UnitTypeListSO unitTypeListSO;
         [SerializeField] private BuildingTypeListSO buildingTypeListSO;

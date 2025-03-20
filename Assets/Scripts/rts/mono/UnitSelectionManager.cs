@@ -84,7 +84,7 @@ namespace rts.mono {
                         Filter = new CollisionFilter {
                             BelongsTo = ~0u,
                             // CollidesWith = GameConstants.Selectable,
-                            CollidesWith = (uint) 1 << GameConstants.SoldiersLayer,
+                            CollidesWith = (uint) 1 << GameConstants.SOLDIERS_LAYER,
                             GroupIndex = 0
                         }
                     };
@@ -108,17 +108,31 @@ namespace rts.mono {
                     End = screenPointRay.GetPoint(1000f),
                     Filter = new CollisionFilter {
                         BelongsTo = ~0u,
-                        CollidesWith = GameConstants.Zombie,
+                        CollidesWith = GameConstants.ZOMBIE,
                         GroupIndex = 0
                     }
                 };
                 
-                //Is it a enemy?
+                //Is it an enemy?
                 if (pws.CastRay(rayCastInput, out var hit)) {
                     var offset = entityManager.HasComponent<AttackTargetOffset>(hit.Entity) ?
                         entityManager.GetComponentData<AttackTargetOffset>(hit.Entity).Value : new float3(0, 1.5f, 0f);
 
-                    //Check Faction or any other attribute on the selected target?
+                    // TODO Check Faction or any other attribute on the selected target?
+                    // var selectedWithTargetOverrideQuery = new EntityQueryBuilder(Allocator.Temp)
+                    //     .WithAll<Selected>().WithPresent<TargetOverride, ShouldMove>()
+                    //     .Build(entityManager);
+                    // var entityArray = selectedWithTargetOverrideQuery.ToEntityArray(Allocator.Temp);
+                    // var targetOverrides = selectedWithTargetOverrideQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
+                    // for (var i = 0; i < entityArray.Length; i++) {
+                    //     targetOverrides[i] = new TargetOverride() {
+                    //         Value = hit.Entity,
+                    //         AttackOffset = offset
+                    //     };
+                    //     entityManager.SetComponentEnabled<ShouldMove>(entityArray[i], true);
+                    // }
+                    // selectedWithTargetOverrideQuery.CopyFromComponentDataArray(targetOverrides);
+                    
                     var selectedWithTargetOverride = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<Selected>().WithPresent<TargetOverride, ShouldMove>()
                         .Build(entityManager);
@@ -130,7 +144,7 @@ namespace rts.mono {
                         };
                     }
                     selectedWithTargetOverride.CopyFromComponentDataArray(targetOverrides);
-                    entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, false);
+                    entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, true);
                 } else {
                     //Try to move...
                     var targetPosition = MouseWorldPosition.Instance.GetPosition();
@@ -138,25 +152,28 @@ namespace rts.mono {
                     //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
                         .WithAll<MoveData, MoveDestination, Selected>()
-                        .WithPresent<ShouldMove, TargetOverride, FlowFieldPathRequest>()
+                        .WithPresent<ShouldMove, TargetOverride, FlowFieldPathRequest, TargetPositionQueued, FlowFieldFollower, ShouldAttack>()
                         .Build(entityManager);
 
                     var entityArray = entityQuery.ToEntityArray(Allocator.Temp);
                     var destinationArray = entityQuery.ToComponentDataArray<MoveDestination>(Allocator.Temp);
                     var targetPositions = GenerateRandomRingsTargetPositions(destinationArray.Length, targetPosition);
                     var targetOverrides = entityQuery.ToComponentDataArray<TargetOverride>(Allocator.Temp);
-                    var flowFieldPathRequests = entityQuery.ToComponentDataArray<FlowFieldPathRequest>(Allocator.Temp);
+                    var targetPositionRequests = entityQuery.ToComponentDataArray<TargetPositionQueued>(Allocator.Temp);
 
                     for (var i = 0; i < destinationArray.Length; i++) {
                         destinationArray[i] = new MoveDestination { Value = targetPositions[i] };
                         targetOverrides[i] = new TargetOverride() { Value = Entity.Null };
                         entityManager.SetComponentEnabled<ShouldMove>(entityArray[i], true);
-                        flowFieldPathRequests[i] = new FlowFieldPathRequest() { TargetPosition = targetPositions[i] };
-                        entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], true);
+                        entityManager.SetComponentEnabled<ShouldAttack>(entityArray[i], false);
+                        targetPositionRequests[i] = new TargetPositionQueued() { Value = targetPositions[i] };
+                        entityManager.SetComponentEnabled<TargetPositionQueued>(entityArray[i], true);
+                        entityManager.SetComponentEnabled<FlowFieldPathRequest>(entityArray[i], false);
+                        entityManager.SetComponentEnabled<FlowFieldFollower>(entityArray[i], false);
                     }
                     entityQuery.CopyFromComponentDataArray(destinationArray);
                     entityQuery.CopyFromComponentDataArray(targetOverrides);
-                    entityQuery.CopyFromComponentDataArray(flowFieldPathRequests);
+                    entityQuery.CopyFromComponentDataArray(targetPositionRequests);
                     
                     
                     //Rally points

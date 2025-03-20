@@ -46,10 +46,10 @@ namespace rts.mono {
             }
         }
         
-        public void UpdateGridDebug(GridSystemData gridSystemData) {
+        public void UpdateGridDebug(GridSystemData gridSystemData, int gridIndex) {
             for (int y = 0; y < gridSystemData.YSize; y++) {
                 for (int x = 0; x < gridSystemData.XSize; x++) {
-                    var gridMapGridNode = gridSystemData.GridMap.GridNodes[GridSystemData.GetIndex(x, y, gridSystemData.XSize)];
+                    var gridMapGridNode = gridSystemData.GridMapsArray[gridIndex].GridNodes[GridSystemData.GetIndex(x, y, gridSystemData.XSize)];
                     var gridNode = entityManager.GetComponentData<GridNode>(gridMapGridNode);
                     var gridSystemDebugCell = gridSystemDebugCells[x, y];
                     if (gridNode.Cost == 0) {

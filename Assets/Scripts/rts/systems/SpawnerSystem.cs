@@ -25,7 +25,7 @@ namespace rts.systems {
             //EnemyCollision - Zombie = 8
             var collisionFilter = new CollisionFilter {
                 BelongsTo = ~0u,
-                CollidesWith = (uint) 1 << GameConstants.ZombiesLayer,
+                CollidesWith = (uint) 1 << GameConstants.ZOMBIES_LAYER,
                 GroupIndex = 0
             };
             

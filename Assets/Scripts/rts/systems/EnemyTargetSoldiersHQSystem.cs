@@ -2,11 +2,14 @@ using rts.authoring;
 using rts.components;
 using Unity.Burst;
 using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Physics.Systems;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace rts.systems {
-    
-    [UpdateInGroup(typeof(SimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateAfter(typeof(FixedStepSimulationSystemGroup))] //Because Move Systems are in PhysicsSystemGroup
     public partial struct EnemyTargetSoldiersHQSystem : ISystem {
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
@@ -21,16 +24,21 @@ namespace rts.systems {
             var hqPosition = SystemAPI.GetComponent<LocalTransform>(soldiersHQ).Position;
 
             //Don't set the target just the destination
-            foreach (var (target, shouldMove, destination, entity) in
-                     SystemAPI.Query<RefRO<Target>,
-                             EnabledRefRW<ShouldMove>,
-                             RefRW<MoveDestination>>()
+            foreach (var (target,
+                         targetPositionQueued,
+                         enabledTargetPositionQueued,
+                         entity
+                         ) in SystemAPI.Query<
+                             RefRO<Target>,
+                             RefRW<TargetPositionQueued>,
+                             EnabledRefRW<TargetPositionQueued>>()
+                         .WithPresent<TargetPositionQueued, ShouldMove>()
                          .WithAll<TargetSoldiersHQOnSpawn>()
-                         .WithEntityAccess()) {
+                         .WithEntityAccess()
+                    ) {
                 if (target.ValueRO.Value != Entity.Null) continue;
-                destination.ValueRW = new MoveDestination { Value = hqPosition };
-                shouldMove.ValueRW = true;
-                ecb.SetComponentEnabled<ShouldMove>(entity, true);
+                targetPositionQueued.ValueRW.Value = hqPosition;
+                enabledTargetPositionQueued.ValueRW = true;
                 ecb.RemoveComponent<TargetSoldiersHQOnSpawn>(entity);
             }
         }

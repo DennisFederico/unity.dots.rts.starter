@@ -16,5 +16,6 @@ namespace rts.authoring {
     public struct FlowFieldFollower : IComponentData, IEnableableComponent {
         public float3 LastFlowFieldVector;
         public float3 TargetPosition;
+        public int FlowFieldIndex;
     }
 }

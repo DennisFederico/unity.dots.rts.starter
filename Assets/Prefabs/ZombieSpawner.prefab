@@ -73,7 +73,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2806531811584071896}
   - component: {fileID: 9217748105882855273}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: PathfindingObstacle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -114,8 +114,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6, y: 8, z: 6}
-  m_Center: {x: 0, y: 4, z: 0}
+  m_Size: {x: 6, y: 6.402851, z: 6}
+  m_Center: {x: 0, y: 3.2014256, z: 0}
 --- !u!1 &5274994722206082548
 GameObject:
   m_ObjectHideFlags: 0

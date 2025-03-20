@@ -85,7 +85,7 @@ namespace rts.mono {
             var collisionFilter = new CollisionFilter {
                 BelongsTo = ~0u,
                 // CollidesWith = GameConstants.Selectable,
-                CollidesWith = (uint)(1 << GameConstants.SoldiersLayer | 1 << GameConstants.ZombiesLayer | 1 << GameConstants.UnitsLayer),
+                CollidesWith = (uint)(1 << GameConstants.SOLDIERS_LAYER | 1 << GameConstants.ZOMBIES_LAYER | 1 << GameConstants.UNITS_LAYER),
                 GroupIndex = 0
             };
             
