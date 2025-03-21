@@ -35,7 +35,7 @@ namespace rts.systems {
                 XSize = gridSystemData.XSize,
                 YSize = gridSystemData.YSize,
                 CostMap = gridSystemData.CostMap
-            }.ScheduleParallel(state.Dependency).Complete();
+            }.ScheduleParallel();
 
             new CanMoveStraightJob() {
                 CollisionWorld = collisionWorld,
@@ -44,7 +44,7 @@ namespace rts.systems {
                     CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
                     GroupIndex = 0
                 }
-            }.ScheduleParallel(state.Dependency).Complete();
+            }.ScheduleParallel();
 
             gridNodeComponentLookup.Update(ref state);
             new FlowFieldFollowerJob() {
@@ -53,16 +53,16 @@ namespace rts.systems {
                 CellSize = gridSystemData.CellSize,
                 XSize = gridSystemData.XSize,
                 NumEntitiesPerGrid = gridSystemData.XSize * gridSystemData.YSize
-            }.ScheduleParallel(state.Dependency).Complete();
+            }.ScheduleParallel();
 
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             shouldMoveComponentLookup.Update(ref state);
-            state.Dependency = new UnitMoveJob {
+            new UnitMoveJob {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 Ecb = ecb.AsParallelWriter(),
                 StoppingDistance = 0.5f,
                 ShouldMoveLookup = shouldMoveComponentLookup
-            }.ScheduleParallel(state.Dependency);
+            }.ScheduleParallel();
         }
 
         [BurstCompile]
