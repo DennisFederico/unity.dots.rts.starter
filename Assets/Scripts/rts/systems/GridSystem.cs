@@ -21,6 +21,7 @@ namespace rts.systems {
             public NativeArray<GridMap> GridMapsArray;
             public int NextGridIndex;
             public NativeArray<byte> CostMap;
+            public NativeArray<Entity> AllGridMapEntities;
 
             public const byte WALL_COST = byte.MaxValue;
             public const byte HEAVY_COST = 250;
@@ -65,17 +66,17 @@ namespace rts.systems {
                 return new float3(flowFieldVector.x, 0f, flowFieldVector.y);
             }
 
-            public bool IsWithinBounds(int x, int y) {
-                return x >= 0 && x < XSize && y >= 0 && y < YSize;
-            }
-
             public bool IsWithinBounds(int2 index) {
                 return index.x >= 0 && index.x < XSize && index.y >= 0 && index.y < YSize;
             }
+            
+            public static bool IsWithinBounds(int2 index, int xSize, int ySize) {
+                return index.x >= 0 && index.x < xSize && index.y >= 0 && index.y < ySize;
+            }
 
-            public static bool IsWalkableGridPosition(float3 worldPosition, GridSystemData gridSystemData) {
-                var gridPosition = GridSystemData.GetGridPosition(worldPosition, gridSystemData.CellSize);
-                return gridSystemData.IsWithinBounds(gridPosition) && !GridNode.IsWall(gridPosition, gridSystemData);
+            public static bool IsWalkableGridPosition(float3 worldPosition, int xSize, int ySize, float cellSize, NativeArray<byte> costMap) {
+                var gridPosition = GridSystemData.GetGridPosition(worldPosition, cellSize);
+                return IsWithinBounds(gridPosition, xSize, ySize) && !GridNode.IsWall(gridPosition, xSize, costMap);
             }
         }
 
@@ -98,9 +99,9 @@ namespace rts.systems {
                 return gridNode.Cost == GridSystemData.WALL_COST;
             }
 
-            public static bool IsWall(int2 gridPosition, GridSystemData gridSystemData) {
-                var index = GridSystemData.GetIndex(gridPosition, gridSystemData.XSize);
-                return gridSystemData.CostMap[index] == GridSystemData.WALL_COST;
+            public static bool IsWall(int2 gridPosition, int xSize, NativeArray<byte> costMap) {
+                var index = GridSystemData.GetIndex(gridPosition, xSize);
+                return costMap[index] == GridSystemData.WALL_COST;
             }
         }
 
@@ -123,10 +124,13 @@ namespace rts.systems {
 
             //Allocate GridMaps array
             var gridMapsArray = new NativeArray<GridMap>(FLOW_FIELD_MAPS_COUNT, Allocator.Persistent);
+            //HACK TO HAVE ALL ENTITIES IN ONE PLACE TO AVOID NESTED CONTAINERS
+            var allGridMapEntitiesList = new NativeList<Entity>(FLOW_FIELD_MAPS_COUNT * totalSize, Allocator.Temp);
 
             for (int i = 0; i < FLOW_FIELD_MAPS_COUNT; i++) {
                 //GridNodes array
                 var gridNodes = state.EntityManager.Instantiate(gridNodeTemplate, totalSize, Allocator.Persistent);
+                allGridMapEntitiesList.AddRange(gridNodes);
 
                 for (int y = 0; y < ySize; y++) {
                     for (int x = 0; x < xSize; x++) {
@@ -157,8 +161,11 @@ namespace rts.systems {
                 CellSize = cellSize,
                 GridMapsArray = gridMapsArray,
                 CostMap = new NativeArray<byte>(totalSize, Allocator.Persistent),
-                NextGridIndex = 0
+                NextGridIndex = 0,
+                AllGridMapEntities = allGridMapEntitiesList.ToArray(Allocator.Persistent)
             });
+            
+            allGridMapEntitiesList.Dispose();
         }
 
 #if !GRID_DEBUG
@@ -358,6 +365,7 @@ namespace rts.systems {
 
             gridSystemData.ValueRW.GridMapsArray.Dispose();
             gridSystemData.ValueRW.CostMap.Dispose();
+            gridSystemData.ValueRW.AllGridMapEntities.Dispose();
         }
 
         [BurstCompile]
@@ -366,6 +374,13 @@ namespace rts.systems {
             [ReadOnly] public int2 TargetGridPosition;
 
             public void Execute(ref GridNode gridNode) {
+                
+                //TODO This check is absurd, we should be able to use a shared component with the value of the gridMapIndex and use that to filter the entities
+                //Such that all GridNode entities for a given GridMap are in the same chunk
+                //From the Update method use a Query and then schedule the jub using it...
+                // _query = SystemAPI.QueryBuilder()....Build();
+                // var job = new UpdateJob();
+                // state.Dependency = job.ScheduleParallel(_query, state.Dependency);
                 if (gridNode.GridMapIndex != GridMapIndex) return;
                 if (gridNode.GridNodePosition.Equals(TargetGridPosition)) {
                     gridNode.Cost = 0;

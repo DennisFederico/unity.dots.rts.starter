@@ -8,12 +8,12 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace rts.systems {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     public partial struct UnitMoveJobSystem : ISystem {
         private ComponentLookup<ShouldMove> shouldMoveComponentLookup;
+        private ComponentLookup<GridSystem.GridNode> gridNodeComponentLookup;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state) {
@@ -21,6 +21,7 @@ namespace rts.systems {
             state.RequireForUpdate<GridSystem.GridSystemData>();
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             shouldMoveComponentLookup = SystemAPI.GetComponentLookup<ShouldMove>();
+            gridNodeComponentLookup = SystemAPI.GetComponentLookup<GridSystem.GridNode>();
         }
 
         [BurstCompile]
@@ -28,108 +29,32 @@ namespace rts.systems {
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             var gridSystemData = SystemAPI.GetSingleton<GridSystem.GridSystemData>();
             
-            foreach (var (localTransform,
-                         targetPositionQueued,
-                         enabledTargetPositionQueued,
-                         flowFieldPathRequest,
-                         enabledFlowFieldPathRequest,
-                         destination,
-                         enabledShouldMove) in
-                     SystemAPI.Query<
-                             RefRO<LocalTransform>,
-                             RefRW<TargetPositionQueued>,
-                             EnabledRefRW<TargetPositionQueued>,
-                             RefRW<FlowFieldPathRequest>,
-                             EnabledRefRW<FlowFieldPathRequest>,
-                             RefRW<MoveDestination>,
-                             EnabledRefRW<ShouldMove>>()
-                         .WithPresent<ShouldMove>()
-                         .WithDisabled<FlowFieldPathRequest>()) {
+            new TargetPositionQueuedJob() {
+                CollisionWorld = collisionWorld,
+                CellSize = gridSystemData.CellSize,
+                XSize = gridSystemData.XSize,
+                YSize = gridSystemData.YSize,
+                CostMap = gridSystemData.CostMap
+            }.ScheduleParallel(state.Dependency).Complete();
 
-                var raycastInput = new RaycastInput {
-                    Start = localTransform.ValueRO.Position,
-                    End = targetPositionQueued.ValueRO.Value,
-                    Filter = new CollisionFilter {
-                        BelongsTo = ~0u,
-                        CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
-                        GroupIndex = 0
-                    }
-                };
-                if (!collisionWorld.CastRay(raycastInput)) {
-                    //No pathfinding needed
-                    destination.ValueRW.Value = targetPositionQueued.ValueRO.Value;
-                    enabledShouldMove.ValueRW = true;
-                } else {
-                    if (GridSystem.GridSystemData.IsWalkableGridPosition(targetPositionQueued.ValueRO.Value, gridSystemData)) {
-                        // Do PathFind
-                        flowFieldPathRequest.ValueRW.TargetPosition = targetPositionQueued.ValueRO.Value;
-                        enabledFlowFieldPathRequest.ValueRW = true;    
-                    } else {
-                        destination.ValueRW.Value = localTransform.ValueRO.Position;
-                        enabledShouldMove.ValueRW = true;
-                    }
+            new CanMoveStraightJob() {
+                CollisionWorld = collisionWorld,
+                ObstaclesFilter = new CollisionFilter {
+                    BelongsTo = ~0u,
+                    CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
+                    GroupIndex = 0
                 }
+            }.ScheduleParallel(state.Dependency).Complete();
 
-                //Disable the target position queued whether it was a pathfinding or normal move
-                enabledTargetPositionQueued.ValueRW = false;
-            }
+            gridNodeComponentLookup.Update(ref state);
+            new FlowFieldFollowerJob() {
+                GridNodeLookup = gridNodeComponentLookup,
+                AllGridMapsEntities = gridSystemData.AllGridMapEntities,
+                CellSize = gridSystemData.CellSize,
+                XSize = gridSystemData.XSize,
+                NumEntitiesPerGrid = gridSystemData.XSize * gridSystemData.YSize
+            }.ScheduleParallel(state.Dependency).Complete();
 
-            
-            foreach (var (localTransform,
-                         follower,
-                         enabledFollower,
-                         destination,
-                         enabledShouldMove) in
-                     SystemAPI.Query<
-                             RefRO<LocalTransform>,
-                             RefRW<FlowFieldFollower>,
-                             EnabledRefRW<FlowFieldFollower>,
-                             RefRW<MoveDestination>,
-                             EnabledRefRW<ShouldMove>>()
-                         .WithPresent<ShouldMove>()) {
-                //Current GridPosition
-                var gridPosition = GridSystem.GridSystemData.GetGridPosition(localTransform.ValueRO.Position, gridSystemData.CellSize);
-                //Get current grid cell vector
-                var nodeIndex = GridSystem.GridSystemData.GetIndex(gridPosition, gridSystemData.XSize);
-                var gridNodeEntity = gridSystemData.GridMapsArray[follower.ValueRO.FlowFieldIndex].GridNodes[nodeIndex];
-                var gridNode = SystemAPI.GetComponent<GridSystem.GridNode>(gridNodeEntity);
-                //Get the flow field vector
-                var flowVector = GridSystem.GridSystemData.GetWorldFlowVector(gridNode.Vector);
-
-                if (GridSystem.GridNode.IsWall(gridNode)) {
-                    flowVector = follower.ValueRW.LastFlowFieldVector;
-                } else {
-                    follower.ValueRW.LastFlowFieldVector = flowVector;
-                }
-
-                if (math.distance(localTransform.ValueRO.Position, follower.ValueRO.TargetPosition) < gridSystemData.CellSize) {
-                    enabledFollower.ValueRW = false;
-                    destination.ValueRW.Value = localTransform.ValueRO.Position;
-                } else {
-                    var nodeWorldCenter = GridSystem.GridSystemData.GetWorldCenterPosition(gridPosition, gridSystemData.CellSize);
-                    destination.ValueRW.Value = nodeWorldCenter + (flowVector * gridSystemData.CellSize * 1.5f);
-                }
-
-                var raycastInput = new RaycastInput {
-                    Start = localTransform.ValueRO.Position,
-                    End = follower.ValueRO.TargetPosition,
-                    Filter = new CollisionFilter {
-                        BelongsTo = ~0u,
-                        CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
-                        GroupIndex = 0
-                    }
-                };
-
-                if (!collisionWorld.CastRay(raycastInput)) {
-                    //No pathfinding needed
-                    Debug.Log("CLEAR SIGHT2");
-                    destination.ValueRW.Value = follower.ValueRO.TargetPosition;
-                    enabledFollower.ValueRW = false;
-                }
-
-                enabledShouldMove.ValueRW = true;
-            }
-            
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             shouldMoveComponentLookup.Update(ref state);
             state.Dependency = new UnitMoveJob {
@@ -144,6 +69,122 @@ namespace rts.systems {
         public void OnDestroy(ref SystemState state) { }
     }
 
+    [BurstCompile]
+    [WithPresent(typeof(ShouldMove))]
+    [WithDisabled(typeof(FlowFieldPathRequest))]
+    public partial struct TargetPositionQueuedJob : IJobEntity {
+        [ReadOnly] public CollisionWorld CollisionWorld;
+        [ReadOnly] public float CellSize;
+        [ReadOnly] public int XSize;
+        [ReadOnly] public int YSize;
+        [ReadOnly] public NativeArray<byte> CostMap;
+
+        private void Execute(
+            in LocalTransform localTransform,
+            ref TargetPositionQueued targetPositionQueued,
+            EnabledRefRW<TargetPositionQueued> enabledTargetPositionQueued,
+            ref FlowFieldPathRequest flowFieldPathRequest,
+            EnabledRefRW<FlowFieldPathRequest> enabledFlowFieldPathRequest,
+            ref MoveDestination destination,
+            EnabledRefRW<ShouldMove> enabledShouldMove) {
+            var raycastInput = new RaycastInput {
+                Start = localTransform.Position,
+                End = targetPositionQueued.Value,
+                Filter = new CollisionFilter {
+                    BelongsTo = ~0u,
+                    CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
+                    GroupIndex = 0
+                }
+            };
+            if (!CollisionWorld.CastRay(raycastInput)) {
+                //No pathfinding needed
+                destination.Value = targetPositionQueued.Value;
+                enabledShouldMove.ValueRW = true;
+            } else {
+                if (GridSystem.GridSystemData.IsWalkableGridPosition(targetPositionQueued.Value, XSize, YSize, CellSize, CostMap)) {
+                    // Do PathFind
+                    flowFieldPathRequest.TargetPosition = targetPositionQueued.Value;
+                    enabledFlowFieldPathRequest.ValueRW = true;
+                } else {
+                    destination.Value = localTransform.Position;
+                    enabledShouldMove.ValueRW = true;
+                }
+            }
+
+            //Disable the target position queued whether it was a pathfinding or normal move
+            enabledTargetPositionQueued.ValueRW = false;
+        }
+    }
+
+    [BurstCompile]
+    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
+    [WithPresent(typeof(ShouldMove))]
+    public partial struct CanMoveStraightJob : IJobEntity {
+        [ReadOnly] public CollisionWorld CollisionWorld;
+        [ReadOnly] public CollisionFilter ObstaclesFilter;
+
+        private void Execute(in LocalTransform localTransform, ref MoveDestination destination, ref FlowFieldFollower follower, EnabledRefRW<FlowFieldFollower> enabledFollower, EnabledRefRW<ShouldMove> enabledShouldMove) {
+            var raycastInput = new RaycastInput {
+                Start = localTransform.Position,
+                End = follower.TargetPosition,
+                Filter = ObstaclesFilter
+            };
+
+            if (!CollisionWorld.CastRay(raycastInput)) {
+                //No pathfinding needed
+                destination.Value = follower.TargetPosition;
+                enabledFollower.ValueRW = false;
+                enabledShouldMove.ValueRW = true;
+            }
+        }
+    }
+    
+    [BurstCompile]
+    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
+    [WithPresent(typeof(ShouldMove))]
+    public partial struct FlowFieldFollowerJob : IJobEntity {
+        
+        [ReadOnly] public ComponentLookup<GridSystem.GridNode> GridNodeLookup;
+        [ReadOnly] public NativeArray<Entity> AllGridMapsEntities;
+        [ReadOnly] public float CellSize;
+        [ReadOnly] public int XSize;
+        [ReadOnly] public int NumEntitiesPerGrid;
+        
+        private void Execute(
+            in LocalTransform localTransform,
+            ref FlowFieldFollower follower,
+            EnabledRefRW<FlowFieldFollower> enabledFollower,
+            ref MoveDestination destination,
+            EnabledRefRW<ShouldMove> enabledShouldMove) {
+            
+            //Current GridPosition
+            var gridPosition = GridSystem.GridSystemData.GetGridPosition(localTransform.Position, CellSize);
+            //Get current grid cell vector
+            var nodeIndex = GridSystem.GridSystemData.GetIndex(gridPosition, XSize);
+            // var gridNodeEntity = GridSystemData.GridMapsArray[follower.FlowFieldIndex].GridNodes[nodeIndex];
+            var gridNodeEntity = AllGridMapsEntities[NumEntitiesPerGrid * follower.FlowFieldIndex + nodeIndex];
+            var gridNode = GridNodeLookup[gridNodeEntity];
+            //Get the flow field vector
+            var flowVector = GridSystem.GridSystemData.GetWorldFlowVector(gridNode.Vector);
+
+            if (GridSystem.GridNode.IsWall(gridNode)) {
+                flowVector = follower.LastFlowFieldVector;
+            } else {
+                follower.LastFlowFieldVector = flowVector;
+            }
+
+            if (math.distance(localTransform.Position, follower.TargetPosition) < CellSize) {
+                enabledFollower.ValueRW = false;
+                destination.Value = localTransform.Position;
+            } else {
+                var nodeWorldCenter = GridSystem.GridSystemData.GetWorldCenterPosition(gridPosition, CellSize);
+                destination.Value = nodeWorldCenter + (flowVector * CellSize * 1.5f);
+            }
+
+            enabledShouldMove.ValueRW = true;
+        }
+    }
+    
     [BurstCompile]
     [WithAll(typeof(ShouldMove))]
     public partial struct UnitMoveJob : IJobEntity {
@@ -174,4 +215,5 @@ namespace rts.systems {
             physicsVelocity.Angular = float3.zero;
         }
     }
+
 }
