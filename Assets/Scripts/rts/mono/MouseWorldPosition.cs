@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace rts.mono {

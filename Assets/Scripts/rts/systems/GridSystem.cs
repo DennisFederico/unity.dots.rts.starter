@@ -1,4 +1,4 @@
-#define GRID_DEBUG
+//#define GRID_DEBUG
 using rts.authoring;
 using rts.mono;
 using Unity.Burst;

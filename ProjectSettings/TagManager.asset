@@ -17,10 +17,10 @@ TagManager:
   - Buildings
   - PathfindingObstacle
   - PathfindingHeavy
-  - 
-  - 
-  - 
-  - 
+  - MiniMapIcons
+  - FogOfWar
+  - Terrain
+  - Click
   - 
   - 
   - 

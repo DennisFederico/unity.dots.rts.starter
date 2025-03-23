@@ -107,7 +107,7 @@ namespace rts.mono {
                     Start = screenPointRay.origin,
                     End = screenPointRay.GetPoint(1000f),
                     Filter = new CollisionFilter {
-                        BelongsTo = ~0u,
+                        BelongsTo = 1u << GameConstants.CLICK_LAYER,
                         CollidesWith = GameConstants.ZOMBIE,
                         GroupIndex = 0
                     }
@@ -147,7 +147,7 @@ namespace rts.mono {
                     entityManager.SetComponentEnabled<ShouldMove>(selectedWithTargetOverride, true);
                 } else {
                     //Try to move...
-                    var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                    var targetPosition = MouseWorldPosition.Instance.GetPositionSimple();
                     
                     //TODO LOOK FOR WAYS TO IMPROVE MEM ALLOCATION IF WE KEEP THIS APPROACH
                     var entityQuery = new EntityQueryBuilder(Allocator.Temp)
