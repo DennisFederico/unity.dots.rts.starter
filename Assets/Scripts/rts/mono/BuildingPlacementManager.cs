@@ -57,7 +57,7 @@ namespace rts.mono {
             
             //Update Building ghost position
             if (activeBuildingGhost != null) {
-                var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                var targetPosition = MouseWorldPosition.Instance.GetPositionSimple();
                 activeBuildingGhost.position = targetPosition;
                 //TODO Here we can switch the ghost color to red if the building can't be placed
                 //activeBuildingGhost.gameObject.SetActive(CanPlaceBuilding(targetPosition, activeBuildingGhost.GetComponent<BoxCollider>()));
@@ -71,7 +71,7 @@ namespace rts.mono {
             }
 
             if (Input.GetMouseButtonUp(0)) {
-                var targetPosition = MouseWorldPosition.Instance.GetPosition();
+                var targetPosition = MouseWorldPosition.Instance.GetPositionSimple();
                 var boxCollider = ActiveBuildingSO.prefab.GetComponent<BoxCollider>();
 
                 if (CanPlaceBuilding(targetPosition, boxCollider)) {
