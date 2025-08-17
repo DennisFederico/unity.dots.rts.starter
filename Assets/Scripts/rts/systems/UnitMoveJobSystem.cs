@@ -8,6 +8,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace rts.systems {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
@@ -29,39 +30,39 @@ namespace rts.systems {
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             var gridSystemData = SystemAPI.GetSingleton<GridSystem.GridSystemData>();
             
-            new TargetPositionQueuedJob() {
-                CollisionWorld = collisionWorld,
-                CellSize = gridSystemData.CellSize,
-                XSize = gridSystemData.XSize,
-                YSize = gridSystemData.YSize,
-                CostMap = gridSystemData.CostMap
-            }.ScheduleParallel();
-
-            new CanMoveStraightJob() {
-                CollisionWorld = collisionWorld,
-                ObstaclesFilter = new CollisionFilter {
-                    BelongsTo = ~0u,
-                    CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
-                    GroupIndex = 0
-                }
-            }.ScheduleParallel();
-
-            gridNodeComponentLookup.Update(ref state);
-            new FlowFieldFollowerJob() {
-                GridNodeLookup = gridNodeComponentLookup,
-                AllGridMapsEntities = gridSystemData.AllGridMapEntities,
-                CellSize = gridSystemData.CellSize,
-                XSize = gridSystemData.XSize,
-                NumEntitiesPerGrid = gridSystemData.XSize * gridSystemData.YSize
-            }.ScheduleParallel();
+            // new TargetPositionQueuedJob() {
+            //     CollisionWorld = collisionWorld,
+            //     CellSize = gridSystemData.CellSize,
+            //     XSize = gridSystemData.XSize,
+            //     YSize = gridSystemData.YSize,
+            //     CostMap = gridSystemData.CostMap
+            // }.ScheduleParallel();
+            //
+            // new CanMoveStraightJob() {
+            //     CollisionWorld = collisionWorld,
+            //     ObstaclesFilter = new CollisionFilter {
+            //         BelongsTo = ~0u,
+            //         CollidesWith = GameConstants.PATHFINDING_HEAVY | GameConstants.PATHFINDING_OBSTACLES,
+            //         GroupIndex = 0
+            //     }
+            // }.ScheduleParallel();
+            //
+            // gridNodeComponentLookup.Update(ref state);
+            // new FlowFieldFollowerJob() {
+            //     GridNodeLookup = gridNodeComponentLookup,
+            //     AllGridMapsEntities = gridSystemData.AllGridMapEntities,
+            //     CellSize = gridSystemData.CellSize,
+            //     XSize = gridSystemData.XSize,
+            //     NumEntitiesPerGrid = gridSystemData.XSize * gridSystemData.YSize
+            // }.ScheduleParallel();
 
             var ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>().CreateCommandBuffer(state.WorldUnmanaged);
             shouldMoveComponentLookup.Update(ref state);
             new UnitMoveJob {
                 DeltaTime = SystemAPI.Time.DeltaTime,
                 Ecb = ecb.AsParallelWriter(),
-                StoppingDistance = 0.5f,
-                ShouldMoveLookup = shouldMoveComponentLookup
+                StoppingDistance = 2f,
+                // ShouldMoveLookup = shouldMoveComponentLookup
             }.ScheduleParallel();
         }
 
@@ -70,7 +71,8 @@ namespace rts.systems {
     }
 
     [BurstCompile]
-    [WithPresent(typeof(ShouldMove))]
+    // [WithPresent(typeof(ShouldMove))]
+    [WithAll(typeof(ShouldMove))]
     [WithDisabled(typeof(FlowFieldPathRequest))]
     public partial struct TargetPositionQueuedJob : IJobEntity {
         [ReadOnly] public CollisionWorld CollisionWorld;
@@ -117,8 +119,9 @@ namespace rts.systems {
     }
 
     [BurstCompile]
-    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
-    [WithPresent(typeof(ShouldMove))]
+    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination), typeof(ShouldMove))]
+    // [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
+    // [WithPresent(typeof(ShouldMove))]
     public partial struct CanMoveStraightJob : IJobEntity {
         [ReadOnly] public CollisionWorld CollisionWorld;
         [ReadOnly] public CollisionFilter ObstaclesFilter;
@@ -140,8 +143,9 @@ namespace rts.systems {
     }
     
     [BurstCompile]
-    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
-    [WithPresent(typeof(ShouldMove))]
+    // [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination))]
+    [WithAll(typeof(FlowFieldFollower), typeof(MoveDestination), typeof(ShouldMove))]
+    // [WithPresent(typeof(ShouldMove))]
     public partial struct FlowFieldFollowerJob : IJobEntity {
         
         [ReadOnly] public ComponentLookup<GridSystem.GridNode> GridNodeLookup;
@@ -186,23 +190,28 @@ namespace rts.systems {
     }
     
     [BurstCompile]
-    [WithAll(typeof(ShouldMove))]
+    [WithPresent(typeof(ShouldMove))]
     public partial struct UnitMoveJob : IJobEntity {
         public float DeltaTime;
         public EntityCommandBuffer.ParallelWriter Ecb;
         public float StoppingDistance;
-        [NativeDisableParallelForRestriction] public ComponentLookup<ShouldMove> ShouldMoveLookup;
+        // [NativeDisableParallelForRestriction] public ComponentLookup<ShouldMove> ShouldMoveLookup;
 
-        private void Execute(Entity entity, ref LocalTransform transform, in MoveData moveData, ref MoveDestination destination, ref PhysicsVelocity physicsVelocity) {
+        private void Execute(Entity entity, ref LocalTransform transform, in MoveData moveData, ref MoveDestination destination, ref PhysicsVelocity physicsVelocity, EnabledRefRW<ShouldMove> enabledShouldMove) {
+            Debug.Log($"UnitMoveJob - Entity: {entity.Index} - ShouldMove: {enabledShouldMove.ValueRO}");
             var direction = destination.Value - transform.Position;
 
             // TODO... IS IT WORTH IT TO PUT IN ANOTHER SYSTEM OR JOB?
             if (math.lengthsq(direction) < StoppingDistance) {
+                Debug.Log($"Stopping distance reached, stopping movement {enabledShouldMove.ValueRO}");
                 physicsVelocity.Angular = float3.zero;
                 physicsVelocity.Linear = float3.zero;
-                ShouldMoveLookup.SetComponentEnabled(entity, false);
+                destination.Value = transform.Position;
+                enabledShouldMove.ValueRW = false;
+                // ShouldMoveLookup.SetComponentEnabled(entity, false);
                 return;
             }
+            Debug.Log($"Moving towards {destination.Value}, distance: {math.distance(transform.Position, destination.Value)}");
 
             direction = math.normalize(direction);
 

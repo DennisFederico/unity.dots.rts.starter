@@ -8,7 +8,10 @@ namespace rts.scriptable {
             ZombieSpawner,
             SoldierTower,
             SoldierBarracks,
-            SoldiersHQ
+            SoldiersHQ,
+            IronHarvester,
+            GoldHarvester,
+            OilHarvester,
         }
         
         public BuildingType buildingType;

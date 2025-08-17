@@ -71,7 +71,7 @@ namespace rts.components {
     public struct MeleeAttack : IComponentData {
         public float Timer;
         public float TimerMax;
-        public float TouchDistance;
+        //public float TouchDistance;
         public float AttackDistanceSq;
         public int Damage;
         public bool OnAttack;

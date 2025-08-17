@@ -43,6 +43,7 @@ namespace rts.systems {
                     bulletTransform.ValueRW.Position = targetPosition;
                     var health = SystemAPI.GetComponentRW<Health>(target.ValueRO.Value);
                     // health.ValueRW.Value -= bulletData.ValueRO.Damage;
+                    //TODO - Don't apply here, use a buffer on the target and a system to apply the aggregated damage as multiple entities can hit the same target
                     health.ValueRW.ApplyDamage(bulletData.ValueRO.Damage);
                     ecb.DestroyEntity(bulletEntity);
                 } else {

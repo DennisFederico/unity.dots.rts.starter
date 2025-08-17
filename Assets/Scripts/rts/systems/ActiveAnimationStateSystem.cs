@@ -78,6 +78,7 @@ namespace rts.systems {
     }
     
     [BurstCompile]
+    [WithPresent]
     // [WithAll(typeof(MeleeAttack))]
     [WithDisabled(typeof(ShouldMove))]
     public partial struct ActiveAnimationStateMeleeAttackJob : IJobEntity {
